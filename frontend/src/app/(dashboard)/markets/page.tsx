@@ -12,6 +12,23 @@ type SortKey = "ticker" | "price" | "change" | "changePct" | "volume" | "marketC
 
 const SECTORS = ["All", "Technology", "Communication Services", "Consumer Discretionary", "Financials", "Healthcare", "Energy", "Consumer Staples"];
 
+function SortTh({ k, label, right = false, sortKey, onSort }: {
+  k: SortKey; label: string; right?: boolean; sortKey: SortKey; onSort: (key: SortKey) => void;
+}) {
+  return (
+    <th
+      className={`text-[10px] uppercase tracking-wider text-muted-foreground/70 py-2.5 px-4 font-semibold cursor-pointer select-none hover:text-foreground transition-colors whitespace-nowrap border-y border-border bg-transparent ${right ? "text-right" : "text-left"}`}
+      onClick={() => onSort(k)}
+    >
+      {label}
+      <ArrowUpDown
+        size={10}
+        className={`inline ml-1 ${sortKey === k ? "text-primary opacity-100" : "opacity-40"}`}
+      />
+    </th>
+  );
+}
+
 export default function MarketsPage() {
   const { getFilteredStocks, searchQuery, setSearchQuery, selectedSector, setSelectedSector, toggleWatchlist, isWatched } = useMarketStore();
   const [sortKey, setSortKey] = useState<SortKey>("marketCap");
@@ -36,19 +53,6 @@ export default function MarketsPage() {
       setSortDir("desc");
     }
   };
-
-  const SortTh = ({ k, label, right = false }: { k: SortKey; label: string; right?: boolean }) => (
-    <th
-      className={`text-[10px] uppercase tracking-wider text-muted-foreground/70 py-2.5 px-4 font-semibold cursor-pointer select-none hover:text-foreground transition-colors whitespace-nowrap border-y border-border bg-transparent ${right ? "text-right" : "text-left"}`}
-      onClick={() => toggleSort(k)}
-    >
-      {label}
-      <ArrowUpDown
-        size={10}
-        className={`inline ml-1 ${sortKey === k ? "text-primary opacity-100" : "opacity-40"}`}
-      />
-    </th>
-  );
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -111,14 +115,14 @@ export default function MarketsPage() {
           <table className="w-full border-collapse text-[13px]">
             <thead>
               <tr>
-                <SortTh k="ticker" label="Company" />
+                <SortTh k="ticker" label="Company" sortKey={sortKey} onSort={toggleSort} />
                 <th className="text-[10px] uppercase tracking-wider text-muted-foreground/70 py-2.5 px-4 font-semibold border-y border-border bg-transparent text-left">
                   Sector
                 </th>
-                <SortTh k="price" label="Price" right />
-                <SortTh k="change" label="Change" right />
-                <SortTh k="volume" label="Volume" right />
-                <SortTh k="marketCap" label="Mkt Cap" right />
+                <SortTh k="price" label="Price" right sortKey={sortKey} onSort={toggleSort} />
+                <SortTh k="change" label="Change" right sortKey={sortKey} onSort={toggleSort} />
+                <SortTh k="volume" label="Volume" right sortKey={sortKey} onSort={toggleSort} />
+                <SortTh k="marketCap" label="Mkt Cap" right sortKey={sortKey} onSort={toggleSort} />
                 <th className="border-y border-border bg-transparent py-2.5 px-4 w-20" />
               </tr>
             </thead>

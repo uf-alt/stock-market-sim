@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useMarketStore } from "@/stores/market.store";
-import { formatCurrency, formatPercent, formatChange } from "@/utils/format";
-import { Star, TrendingUp } from "lucide-react";
+import { formatCurrency, formatPercent } from "@/utils/format";
+import { Star } from "lucide-react";
 
 export default function WatchlistPage() {
   const { stocks, watchlist, toggleWatchlist } = useMarketStore();

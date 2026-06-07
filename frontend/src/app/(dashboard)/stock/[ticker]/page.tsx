@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { use, useState, useMemo } from "react";
 import Link from "next/link";
 import { generatePriceHistory } from "@/lib/mock-data";
 import { usePortfolioStore } from "@/stores/portfolio.store";
@@ -39,16 +39,15 @@ export default function StockDetailPage({
   const { toggleWatchlist, isWatched } = useMarketStore();
 
   const [timeframe, setTimeframe] = useState("1M");
-  const [history, setHistory] = useState<PricePoint[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [tradeType, setTradeType] = useState<"buy" | "sell">("buy");
   const [tradeMsg, setTradeMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  useEffect(() => {
-    if (!stock) return;
+  const history = useMemo<PricePoint[]>(() => {
+    if (!stock) return [];
     const days = TIMEFRAMES.find((t) => t.label === timeframe)?.days ?? 30;
-    setHistory(generatePriceHistory(stock.price, days));
-  }, [stock, timeframe]);
+    return generatePriceHistory(stock.price, days);
+  }, [stock?.ticker, stock?.price, timeframe]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!stock) {
     return (
