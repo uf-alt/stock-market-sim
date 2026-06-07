@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio — StockSim</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0e0b08; --surface: #17130f; --surface2: #1f1a13;
+      --border: #2c2218; --text: #f0ebe3; --muted: #9a8e80; --dim: #5c5044;
+      --green: #0ecb81; --green-dim: rgba(14,203,129,0.12);
+      --red: #f6465d; --red-dim: rgba(246,70,93,0.12);
+      --accent: #c96520; --accent-dim: rgba(201,101,32,0.15);
+      --amber: #f0b90b; --amber-dim: rgba(240,185,11,0.12);
+      --sidebar-w: 220px; --topbar-h: 60px; --r: 14px;
+      --font: 'DM Sans', -apple-system, system-ui, sans-serif;
+      --font-display: 'Playfair Display', Georgia, serif;
+    }
+    html, body { height: 100%; overflow: hidden; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; line-height: 1.5; display: flex; }
+    a { color: inherit; text-decoration: none; }
+
+    /* SIDEBAR */
+    .sidebar { width: var(--sidebar-w); height: 100vh; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+    .sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 20px 18px; border-bottom: 1px solid var(--border); }
+    .logo-mark { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), #e07830); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; color: #fff; flex-shrink: 0; }
+    .logo-text { font-weight: 700; font-size: 17px; }
+    .sidebar-nav { flex: 1; padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; }
+    .nav-section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--dim); padding: 10px 8px 4px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; color: var(--muted); font-size: 13.5px; font-weight: 500; cursor: pointer; transition: background 0.15s, color 0.15s; }
+    .nav-item:hover { background: var(--surface2); color: var(--text); }
+    .nav-item.active { background: var(--accent-dim); color: var(--accent); }
+    .nav-icon { width: 16px; text-align: center; }
+    .nav-badge { margin-left: auto; background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; }
+    .sidebar-footer { padding: 14px; border-top: 1px solid var(--border); }
+    .user-card { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 8px; cursor: pointer; transition: background 0.15s; }
+    .user-card:hover { background: var(--surface2); }
+    .avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #a8521a, #e07830); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: #fff; flex-shrink: 0; }
+    .user-name { font-size: 13px; font-weight: 600; }
+    .user-level { font-size: 11px; color: var(--muted); }
+
+    /* MAIN */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .topbar { height: var(--topbar-h); background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 24px; gap: 14px; flex-shrink: 0; }
+    .page-title { font-size: 17px; font-weight: 700; }
+    .topbar-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+    .icon-btn { width: 34px; height: 34px; border-radius: 8px; background: transparent; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); font-size: 14px; transition: background 0.15s; position: relative; }
+    .icon-btn:hover { background: var(--surface2); }
+    .notif-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); position: absolute; top: 6px; right: 6px; border: 2px solid var(--surface); }
+    .content { flex: 1; overflow-y: auto; padding: 24px; }
+
+    .gain { color: var(--green); }
+    .loss { color: var(--red); }
+    .gain-bg { background: var(--green-dim); color: var(--green); }
+    .loss-bg { background: var(--red-dim); color: var(--red); }
+
+    /* SUMMARY STAT CARDS */
+    .summary-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 20px; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 16px 18px; }
+    .stat-label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .stat-value { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+    .stat-change { font-size: 12px; font-weight: 600; margin-top: 4px; }
+
+    /* PERFORMANCE CHART */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); margin-bottom: 16px; }
+    .card-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+    .card-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); }
+    .card-action { font-size: 12px; color: var(--accent); cursor: pointer; }
+    .card-action:hover { text-decoration: underline; }
+    .timeframe-btns { display: flex; gap: 2px; background: var(--surface2); border-radius: 8px; padding: 3px; }
+    .tf-btn { padding: 5px 12px; border-radius: 6px; border: none; background: transparent; color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: all 0.15s; }
+    .tf-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+    .chart-body { padding: 20px; }
+
+    /* LAYOUT GRID */
+    .two-col { display: grid; grid-template-columns: 1fr 340px; gap: 16px; align-items: start; }
+
+    /* TABLE */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; padding: 10px 16px; font-weight: 600; border-bottom: 1px solid var(--border); }
+    th:not(:first-child) { text-align: right; }
+    td { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+    td:not(:first-child) { text-align: right; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--surface2); cursor: pointer; }
+    .ticker-cell { display: flex; align-items: center; gap: 12px; }
+    .ticker-logo { width: 36px; height: 36px; border-radius: 10px; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: var(--muted); flex-shrink: 0; }
+    .ticker-sym { font-weight: 700; font-size: 14px; }
+    .ticker-name { font-size: 11px; color: var(--dim); margin-top: 1px; }
+    .alloc-bar-wrap { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+    .alloc-bar-bg { width: 60px; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+    .alloc-bar-fill { height: 100%; border-radius: 3px; }
+    .change-pill { display: inline-block; padding: 3px 8px; border-radius: 5px; font-size: 12px; font-weight: 700; }
+
+    /* SIDE PANEL */
+    .side-col { display: flex; flex-direction: column; gap: 16px; }
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); }
+
+    /* PIE CHART */
+    .pie-section { padding: 20px; }
+    .pie-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 16px; }
+    .pie-wrap { display: flex; justify-content: center; margin-bottom: 18px; }
+    .pie-donut {
+      width: 140px; height: 140px; border-radius: 50%;
+      background: conic-gradient(
+        #c96520 0deg 115deg,
+        #0ecb81 115deg 201deg,
+        #f0b90b 201deg 266deg,
+        #f6465d 266deg 317deg,
+        #4d5872 317deg 360deg
+      );
+      position: relative;
+    }
+    .pie-center {
+      position: absolute; inset: 22px; border-radius: 50%;
+      background: var(--surface);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .pie-center-val { font-size: 16px; font-weight: 900; }
+    .pie-center-label { font-size: 9px; color: var(--dim); text-transform: uppercase; }
+    .legend { display: flex; flex-direction: column; gap: 8px; }
+    .legend-row { display: flex; align-items: center; gap: 8px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+    .legend-name { font-size: 13px; flex: 1; }
+    .legend-pct { font-size: 12px; color: var(--muted); min-width: 36px; text-align: right; }
+    .legend-val { font-size: 12px; font-weight: 600; min-width: 70px; text-align: right; }
+
+    /* SECTOR ALLOCATION */
+    .sector-rows { padding: 0 20px 16px; }
+    .sector-row { padding: 10px 0; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+    .sector-name { font-size: 13px; font-weight: 500; flex: 1; }
+    .sector-pct { font-size: 12px; font-weight: 700; width: 36px; text-align: right; }
+    .sector-bar-bg { flex: 1; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; max-width: 80px; }
+    .sector-bar-fill { height: 100%; border-radius: 3px; background: var(--accent); }
+
+    /* RISK WARNINGS */
+    .risk-section { padding: 16px 20px; }
+    .risk-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 12px; }
+    .risk-item { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; border-radius: 8px; margin-bottom: 8px; }
+    .risk-item:last-child { margin-bottom: 0; }
+    .risk-warn { background: var(--amber-dim); border: 1px solid rgba(240,185,11,0.2); }
+    .risk-ok { background: var(--green-dim); border: 1px solid rgba(14,203,129,0.2); }
+    .risk-icon { font-size: 14px; flex-shrink: 0; }
+    .risk-text { font-size: 12px; line-height: 1.5; }
+    .risk-text strong { }
+
+    /* TRANSACTIONS */
+    .tx-row { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-top: 1px solid var(--border); }
+    .tx-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
+    .tx-buy { background: var(--green-dim); color: var(--green); }
+    .tx-sell { background: var(--red-dim); color: var(--red); }
+    .tx-info { flex: 1; }
+    .tx-desc { font-size: 13px; font-weight: 600; }
+    .tx-date { font-size: 11px; color: var(--dim); margin-top: 1px; }
+    .tx-amount { font-size: 13px; font-weight: 700; }
+
+    /* DIVERSIFICATION SCORE BAR */
+    .div-score-section { padding: 0 20px 20px; }
+    .div-score-header { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+    .div-score-num { font-size: 36px; font-weight: 900; color: var(--green); }
+    .div-score-denom { font-size: 16px; color: var(--dim); }
+    .div-score-label { font-size: 12px; color: var(--green); font-weight: 600; }
+    .div-bar-bg { height: 8px; background: var(--surface2); border-radius: 100px; overflow: hidden; margin-bottom: 8px; }
+    .div-bar-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg, var(--red) 0%, var(--amber) 40%, var(--green) 100%); width: 74%; }
+    .div-bar-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--dim); }
+
+    /* LIGHT MODE */
+    [data-theme="light"] {
+      --bg: #f0ebe3; --surface: #faf7f2; --surface2: #e8e0d5;
+      --border: #d4cab8; --text: #1c1510; --muted: #7a6e65; --dim: #b0a698;
+    }
+    h1, h2, h3 { font-family: var(--font-display); }
+    .theme-toggle::after { content: '☀'; font-size: 15px; }
+    [data-theme="light"] .theme-toggle::after { content: '🌙'; }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-text">StockSim</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <a href="dashboard.html" class="nav-item"><span class="nav-icon">▦</span> Dashboard</a>
+    <a href="markets.html" class="nav-item"><span class="nav-icon">↗</span> Markets</a>
+    <a href="portfolio.html" class="nav-item active"><span class="nav-icon">◉</span> Portfolio</a>
+    <a href="#" class="nav-item"><span class="nav-icon">♡</span> Watchlist</a>
+    <div class="nav-section-label">Learn</div>
+    <a href="#" class="nav-item"><span class="nav-icon">✦</span> Learn<span class="nav-badge">3</span></a>
+    <a href="#" class="nav-item"><span class="nav-icon">★</span> Achievements</a>
+    <a href="#" class="nav-item"><span class="nav-icon">≡</span> Leaderboards</a>
+    <div class="nav-section-label">Account</div>
+    <a href="#" class="nav-item"><span class="nav-icon">⚙</span> Settings</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="avatar">AJ</div>
+      <div><div class="user-name">Alex Johnson</div><div class="user-level">Level 7 · 3,240 XP</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- Main -->
+<div class="main">
+  <header class="topbar">
+    <div class="page-title">Portfolio</div>
+    <div class="topbar-actions">
+      <button class="icon-btn theme-toggle" onclick="toggleTheme()" title="Toggle theme"></button>
+      <div class="icon-btn">🔔<div class="notif-dot"></div></div>
+      <div class="avatar" style="width:34px;height:34px;font-size:13px;cursor:pointer;">AJ</div>
+    </div>
+  </header>
+
+  <main class="content">
+
+    <!-- Summary Cards -->
+    <div class="summary-strip">
+      <div class="stat-card">
+        <div class="stat-label">Total Value</div>
+        <div class="stat-value">$12,843.50</div>
+        <div class="stat-change gain">▲ +28.4% all time</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Unrealized Gain</div>
+        <div class="stat-value gain">+$2,843.50</div>
+        <div class="stat-change" style="color:var(--muted)">On open positions</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Realized Gain</div>
+        <div class="stat-value gain">+$420.00</div>
+        <div class="stat-change" style="color:var(--muted)">Locked in profits</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Today's Change</div>
+        <div class="stat-value gain">+$218.20</div>
+        <div class="stat-change gain">+1.73% today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Cash Available</div>
+        <div class="stat-value">$1,205.80</div>
+        <div class="stat-change" style="color:var(--muted)">9.4% of portfolio</div>
+      </div>
+    </div>
+
+    <!-- Performance Chart -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Portfolio Performance</span>
+        <div class="timeframe-btns">
+          <button class="tf-btn">1W</button>
+          <button class="tf-btn active">1M</button>
+          <button class="tf-btn">3M</button>
+          <button class="tf-btn">1Y</button>
+          <button class="tf-btn">ALL</button>
+        </div>
+      </div>
+      <div class="chart-body">
+        <svg viewBox="0 0 900 140" preserveAspectRatio="none" style="width:100%;height:140px;display:block;">
+          <defs>
+            <linearGradient id="portGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#0ecb81" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#0ecb81" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <line x1="0" y1="35" x2="900" y2="35" stroke="#1f2433" stroke-width="1"/>
+          <line x1="0" y1="70" x2="900" y2="70" stroke="#1f2433" stroke-width="1"/>
+          <line x1="0" y1="105" x2="900" y2="105" stroke="#1f2433" stroke-width="1"/>
+          <path d="M0,120 L30,116 L60,120 L90,110 L120,104 L150,108 L180,96 L210,90 L240,93 L270,82 L300,76 L330,80 L360,68 L390,62 L420,66 L450,55 L480,50 L510,54 L540,43 L570,38 L600,42 L630,32 L660,27 L690,31 L720,22 L750,17 L780,21 L810,14 L840,10 L870,14 L900,8 L900,140 L0,140 Z" fill="url(#portGrad)"/>
+          <path d="M0,120 L30,116 L60,120 L90,110 L120,104 L150,108 L180,96 L210,90 L240,93 L270,82 L300,76 L330,80 L360,68 L390,62 L420,66 L450,55 L480,50 L510,54 L540,43 L570,38 L600,42 L630,32 L660,27 L690,31 L720,22 L750,17 L780,21 L810,14 L840,10 L870,14 L900,8" fill="none" stroke="#0ecb81" stroke-width="2.5"/>
+          <!-- Start reference line -->
+          <line x1="0" y1="120" x2="900" y2="120" stroke="#f6465d" stroke-width="1" stroke-dasharray="6,4" opacity="0.4"/>
+          <text x="8" y="115" fill="#f6465d" font-size="9" font-family="system-ui" opacity="0.7">Start: $10,000</text>
+          <circle cx="900" cy="8" r="5" fill="#0ecb81" stroke="#0e0b08" stroke-width="2"/>
+        </svg>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-top:6px;">
+          <span>Apr 10</span><span>Apr 17</span><span>Apr 24</span><span>May 1</span><span>May 8</span><span>Today</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Holdings + Side Panel -->
+    <div class="two-col">
+
+      <!-- Holdings Table -->
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Holdings</span>
+            <a href="markets.html" class="card-action">Browse stocks →</a>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Stock</th>
+                  <th>Shares</th>
+                  <th>Avg Cost</th>
+                  <th>Current</th>
+                  <th>Value</th>
+                  <th>Gain / Loss</th>
+                  <th>Allocation</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr onclick="location.href='stock-detail.html'">
+                  <td><div class="ticker-cell"><div class="ticker-logo">NVDA</div><div><div class="ticker-sym">NVDA</div><div class="ticker-name">NVIDIA Corporation</div></div></div></td>
+                  <td>4</td>
+                  <td>$820.00</td>
+                  <td>$945.10</td>
+                  <td>$3,780.40</td>
+                  <td><span class="change-pill gain-bg">+$500.40 (+15.3%)</span></td>
+                  <td>
+                    <div class="alloc-bar-wrap">
+                      <span style="font-size:12px;font-weight:600;">32%</span>
+                      <div class="alloc-bar-bg"><div class="alloc-bar-fill" style="width:32%;background:#c96520;"></div></div>
+                    </div>
+                  </td>
+                </tr>
+                <tr onclick="location.href='stock-detail.html'">
+                  <td><div class="ticker-cell"><div class="ticker-logo">AAPL</div><div><div class="ticker-sym">AAPL</div><div class="ticker-name">Apple Inc.</div></div></div></td>
+                  <td>10</td>
+                  <td>$180.00</td>
+                  <td>$210.42</td>
+                  <td>$2,104.20</td>
+                  <td><span class="change-pill gain-bg">+$304.20 (+16.9%)</span></td>
+                  <td>
+                    <div class="alloc-bar-wrap">
+                      <span style="font-size:12px;font-weight:600;">24%</span>
+                      <div class="alloc-bar-bg"><div class="alloc-bar-fill" style="width:24%;background:#0ecb81;"></div></div>
+                    </div>
+                  </td>
+                </tr>
+                <tr onclick="location.href='stock-detail.html'">
+                  <td><div class="ticker-cell"><div class="ticker-logo">MSFT</div><div><div class="ticker-sym">MSFT</div><div class="ticker-name">Microsoft Corporation</div></div></div></td>
+                  <td>6</td>
+                  <td>$390.00</td>
+                  <td>$428.92</td>
+                  <td>$2,573.52</td>
+                  <td><span class="change-pill gain-bg">+$233.52 (+10.0%)</span></td>
+                  <td>
+                    <div class="alloc-bar-wrap">
+                      <span style="font-size:12px;font-weight:600;">18%</span>
+                      <div class="alloc-bar-bg"><div class="alloc-bar-fill" style="width:18%;background:#f0b90b;"></div></div>
+                    </div>
+                  </td>
+                </tr>
+                <tr onclick="location.href='stock-detail.html'">
+                  <td><div class="ticker-cell"><div class="ticker-logo">TSLA</div><div><div class="ticker-sym">TSLA</div><div class="ticker-name">Tesla, Inc.</div></div></div></td>
+                  <td>8</td>
+                  <td>$210.00</td>
+                  <td>$178.50</td>
+                  <td>$1,428.00</td>
+                  <td><span class="change-pill loss-bg">−$252.00 (−15.0%)</span></td>
+                  <td>
+                    <div class="alloc-bar-wrap">
+                      <span style="font-size:12px;font-weight:600;">14%</span>
+                      <div class="alloc-bar-bg"><div class="alloc-bar-fill" style="width:14%;background:#f6465d;"></div></div>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="2" style="color:var(--dim);padding:12px 16px;font-size:13px;">Cash</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>$1,205.80</td>
+                  <td>—</td>
+                  <td>
+                    <div class="alloc-bar-wrap">
+                      <span style="font-size:12px;font-weight:600;">12%</span>
+                      <div class="alloc-bar-bg"><div class="alloc-bar-fill" style="width:12%;background:#4d5872;"></div></div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="card" style="margin-top:0;">
+          <div class="card-header">
+            <span class="card-title">Recent Transactions</span>
+            <a href="#" class="card-action">Full history →</a>
+          </div>
+          <div class="tx-row">
+            <div class="tx-icon tx-buy">BUY</div>
+            <div class="tx-info"><div class="tx-desc">Bought 4 × NVDA</div><div class="tx-date">May 9 · 2:14 PM</div></div>
+            <div class="tx-amount loss">−$3,780.40</div>
+          </div>
+          <div class="tx-row">
+            <div class="tx-icon tx-sell">SELL</div>
+            <div class="tx-info"><div class="tx-desc">Sold 5 × TSLA</div><div class="tx-date">May 6 · 10:32 AM</div></div>
+            <div class="tx-amount gain">+$892.50</div>
+          </div>
+          <div class="tx-row">
+            <div class="tx-icon tx-buy">BUY</div>
+            <div class="tx-info"><div class="tx-desc">Bought 6 × MSFT</div><div class="tx-date">May 3 · 9:45 AM</div></div>
+            <div class="tx-amount loss">−$2,340.00</div>
+          </div>
+          <div class="tx-row">
+            <div class="tx-icon tx-buy">BUY</div>
+            <div class="tx-info"><div class="tx-desc">Bought 10 × AAPL</div><div class="tx-date">Apr 28 · 11:02 AM</div></div>
+            <div class="tx-amount loss">−$1,800.00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Side Panel -->
+      <div class="side-col">
+
+        <!-- Allocation Pie -->
+        <div class="panel">
+          <div class="pie-section">
+            <div class="pie-title">Allocation</div>
+            <div class="pie-wrap">
+              <div class="pie-donut">
+                <div class="pie-center">
+                  <span class="pie-center-val">4</span>
+                  <span class="pie-center-label">stocks</span>
+                </div>
+              </div>
+            </div>
+            <div class="legend">
+              <div class="legend-row"><div class="legend-dot" style="background:#c96520"></div><span class="legend-name">NVDA</span><span class="legend-pct">32%</span><span class="legend-val">$3,780.40</span></div>
+              <div class="legend-row"><div class="legend-dot" style="background:#0ecb81"></div><span class="legend-name">AAPL</span><span class="legend-pct">24%</span><span class="legend-val">$2,104.20</span></div>
+              <div class="legend-row"><div class="legend-dot" style="background:#f0b90b"></div><span class="legend-name">MSFT</span><span class="legend-pct">18%</span><span class="legend-val">$2,573.52</span></div>
+              <div class="legend-row"><div class="legend-dot" style="background:#f6465d"></div><span class="legend-name">TSLA</span><span class="legend-pct">14%</span><span class="legend-val">$1,428.00</span></div>
+              <div class="legend-row"><div class="legend-dot" style="background:#4d5872"></div><span class="legend-name">Cash</span><span class="legend-pct">12%</span><span class="legend-val">$1,205.80</span></div>
+            </div>
+          </div>
+
+          <!-- Sector breakdown -->
+          <div style="border-top:1px solid var(--border);padding:14px 20px 6px;">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.6px;color:var(--dim);margin-bottom:2px;">By Sector</div>
+          </div>
+          <div class="sector-rows">
+            <div class="sector-row">
+              <span class="sector-name">Technology</span>
+              <span class="sector-pct" style="color:var(--red);">74%</span>
+              <div class="sector-bar-bg"><div class="sector-bar-fill" style="width:74%;background:#f6465d;"></div></div>
+            </div>
+            <div class="sector-row">
+              <span class="sector-name">Consumer</span>
+              <span class="sector-pct">14%</span>
+              <div class="sector-bar-bg"><div class="sector-bar-fill" style="width:14%;"></div></div>
+            </div>
+            <div class="sector-row">
+              <span class="sector-name">Cash</span>
+              <span class="sector-pct">12%</span>
+              <div class="sector-bar-bg"><div class="sector-bar-fill" style="width:12%;"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Diversification Score -->
+        <div class="panel" style="padding:20px;">
+          <div style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);margin-bottom:14px;">Diversification Score</div>
+          <div class="div-score-section" style="padding:0;">
+            <div class="div-score-header">
+              <span class="div-score-num">74</span>
+              <span class="div-score-denom">/100</span>
+              <span class="div-score-label">Good</span>
+            </div>
+            <div class="div-bar-bg"><div class="div-bar-fill"></div></div>
+            <div class="div-bar-labels"><span>Poor</span><span>Fair</span><span>Good</span><span>Great</span></div>
+          </div>
+        </div>
+
+        <!-- Risk Warnings -->
+        <div class="panel">
+          <div class="risk-section">
+            <div class="risk-title">Risk Analysis</div>
+            <div class="risk-item risk-warn">
+              <span class="risk-icon">⚠️</span>
+              <div class="risk-text" style="color:var(--muted)"><strong style="color:var(--amber)">High sector concentration:</strong> 74% in Technology. Consider adding Healthcare, Finance, or Energy stocks to reduce sector risk.</div>
+            </div>
+            <div class="risk-item risk-warn">
+              <span class="risk-icon">⚠️</span>
+              <div class="risk-text" style="color:var(--muted)"><strong style="color:var(--amber)">NVDA at 32%:</strong> A single stock accounts for nearly a third of your portfolio. Consider taking partial profits.</div>
+            </div>
+            <div class="risk-item risk-ok">
+              <span class="risk-icon">✓</span>
+              <div class="risk-text" style="color:var(--muted)"><strong style="color:var(--green)">Good cash reserve:</strong> 9.4% cash gives you flexibility to buy dips without selling existing positions.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  function toggleTheme() {
+    const t = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', t);
+    localStorage.setItem('ss-theme', t);
+  }
+  (function() {
+    const t = localStorage.getItem('ss-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+</body>
+</html>

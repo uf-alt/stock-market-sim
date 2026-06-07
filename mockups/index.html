@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StockSim — Learn Investing Without Risk</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0e0b08;
+      --surface: #17130f;
+      --surface2: #1f1a13;
+      --border: #2c2218;
+      --text: #f0ebe3;
+      --muted: #9a8e80;
+      --dim: #5c5044;
+      --green: #0ecb81;
+      --green-dim: rgba(14,203,129,0.12);
+      --red: #f6465d;
+      --accent: #c96520;
+      --accent-dim: rgba(201,101,32,0.15);
+      --amber: #f0b90b;
+      --r: 14px;
+      --font: 'DM Sans', -apple-system, system-ui, sans-serif;
+      --font-display: 'Playfair Display', Georgia, serif;
+    }
+    html, body { height: 100%; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 15px; line-height: 1.6; }
+    a { color: inherit; text-decoration: none; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 48px; height: 64px;
+      background: rgba(14,11,8,0.88); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; }
+    .logo-mark {
+      width: 34px; height: 34px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), #e07830);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 16px; color: #fff;
+    }
+    .logo-text { font-weight: 700; font-size: 18px; }
+    .nav-links { display: flex; align-items: center; gap: 8px; }
+    .btn-ghost {
+      padding: 8px 20px; border-radius: 8px; border: 1px solid var(--border);
+      background: transparent; color: var(--text); font-size: 14px; cursor: pointer;
+      font-family: var(--font); transition: background 0.15s, border-color 0.15s;
+    }
+    .btn-ghost:hover { background: var(--surface2); border-color: var(--accent); }
+    .btn-primary {
+      padding: 9px 22px; border-radius: 8px; border: none;
+      background: var(--accent); color: #fff; font-size: 14px; font-weight: 600;
+      cursor: pointer; font-family: var(--font); transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; text-align: center;
+      padding: 80px 24px 60px;
+      background:
+        radial-gradient(ellipse 800px 500px at 50% 0%, rgba(201,101,32,0.1) 0%, transparent 70%),
+        radial-gradient(ellipse 400px 300px at 20% 80%, rgba(14,203,129,0.07) 0%, transparent 60%);
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--accent-dim); border: 1px solid rgba(201,101,32,0.3);
+      color: #e07830; padding: 6px 16px; border-radius: 100px;
+      font-size: 13px; font-weight: 500; margin-bottom: 32px;
+    }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.3)} }
+    h1 {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      font-size: clamp(40px, 6vw, 72px); font-weight: 800; line-height: 1.1;
+      letter-spacing: -2px; margin-bottom: 24px;
+      background: linear-gradient(135deg, #fff 40%, #e07830 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .hero-sub {
+      font-size: 18px; color: var(--muted); max-width: 520px;
+      margin: 0 auto 40px; line-height: 1.7;
+    }
+    .hero-cta { display: flex; gap: 14px; justify-content: center; margin-bottom: 64px; flex-wrap: wrap; }
+    .btn-hero {
+      padding: 14px 32px; border-radius: 10px; font-size: 16px; font-weight: 600;
+      cursor: pointer; font-family: var(--font); transition: all 0.15s;
+    }
+    .btn-hero-primary { background: var(--accent); color: #fff; border: none; }
+    .btn-hero-primary:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(201,101,32,0.35); }
+    .btn-hero-secondary {
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-hero-secondary:hover { background: var(--surface2); border-color: var(--dim); }
+
+    /* MINI DASHBOARD PREVIEW */
+    .hero-preview {
+      width: 100%; max-width: 860px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04);
+    }
+    .preview-bar {
+      background: var(--surface2); padding: 10px 16px;
+      display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--border);
+    }
+    .traffic-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .preview-body { padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .preview-card {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 16px;
+    }
+    .preview-label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+    .preview-value { font-size: 22px; font-weight: 700; }
+    .preview-change { font-size: 13px; margin-top: 4px; }
+    .up { color: var(--green); }
+    .down { color: var(--red); }
+    .preview-chart { grid-column: span 2; }
+    .chart-svg { width: 100%; height: 80px; }
+
+    /* STATS BAR */
+    .stats-bar {
+      display: flex; justify-content: center; gap: 48px;
+      padding: 32px 24px; border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .stat { text-align: center; }
+    .stat-number { font-size: 28px; font-weight: 800; color: var(--accent); }
+    .stat-label { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+    /* FEATURES */
+    section { max-width: 1100px; margin: 0 auto; padding: 80px 24px; }
+    .section-label { text-align: center; color: var(--accent); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+    .section-title { text-align: center; font-size: 36px; font-weight: 800; margin-bottom: 14px; letter-spacing: -1px; }
+    .section-sub { text-align: center; color: var(--muted); font-size: 16px; max-width: 500px; margin: 0 auto 52px; }
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    @media(max-width:780px) { .features-grid { grid-template-columns: 1fr; } }
+    .feature-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 28px 24px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .feature-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .feature-icon {
+      width: 44px; height: 44px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px; font-size: 20px;
+    }
+    .icon-purple { background: var(--accent-dim); }
+    .icon-green { background: var(--green-dim); }
+    .icon-amber { background: rgba(240,185,11,0.12); }
+    .feature-title { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+    .feature-desc { color: var(--muted); font-size: 14px; line-height: 1.7; }
+
+    /* HOW IT WORKS */
+    .how-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .how-inner { max-width: 1100px; margin: 0 auto; padding: 80px 24px; }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; position: relative; }
+    @media(max-width:700px) { .steps { grid-template-columns: 1fr; } }
+    .step { text-align: center; }
+    .step-num {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: var(--accent-dim); border: 2px solid var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 800; color: var(--accent);
+      margin: 0 auto 16px;
+    }
+    .step-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .step-desc { color: var(--muted); font-size: 14px; line-height: 1.7; }
+
+    /* CONCEPTS */
+    .concepts-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 48px; }
+    @media(max-width:780px) { .concepts-grid { grid-template-columns: 1fr 1fr; } }
+    .concept-chip {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 16px;
+      font-size: 13px; font-weight: 500; text-align: center; color: var(--muted);
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .concept-chip:hover { border-color: var(--accent); color: var(--text); }
+
+    /* CTA SECTION */
+    .cta-section {
+      text-align: center; padding: 100px 24px;
+      background: radial-gradient(ellipse 600px 400px at 50% 100%, rgba(201,101,32,0.12) 0%, transparent 70%);
+    }
+    .cta-title { font-size: clamp(28px, 4vw, 48px); font-weight: 800; margin-bottom: 16px; letter-spacing: -1px; }
+    .cta-sub { color: var(--muted); font-size: 17px; margin-bottom: 36px; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border); padding: 32px 48px;
+      display: flex; align-items: center; justify-content: space-between;
+      color: var(--dim); font-size: 13px; flex-wrap: wrap; gap: 16px;
+    }
+
+    /* LIGHT MODE */
+    [data-theme="light"] {
+      --bg: #f0ebe3; --surface: #faf7f2; --surface2: #e8e0d5;
+      --border: #d4cab8; --text: #1c1510; --muted: #7a6e65; --dim: #b0a698;
+    }
+    [data-theme="light"] nav { background: rgba(240,235,227,0.92); }
+    [data-theme="light"] h1 { background: linear-gradient(135deg, #1c1510 40%, #c96520 100%); }
+
+    /* DISPLAY FONT */
+    h1, h2, h3 { font-family: var(--font-display); }
+
+    /* THEME TOGGLE */
+    .nav-theme-btn {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: transparent; border: 1px solid var(--border);
+      color: var(--muted); cursor: pointer; font-family: var(--font);
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, color 0.15s; font-size: 16px;
+    }
+    .nav-theme-btn:hover { background: var(--surface2); color: var(--text); }
+    .nav-theme-btn::after { content: '☀'; }
+    [data-theme="light"] .nav-theme-btn::after { content: '🌙'; }
+  </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav>
+  <div class="nav-logo">
+    <span class="logo-text">StockSim</span>
+  </div>
+  <div class="nav-links">
+    <button class="nav-theme-btn" onclick="toggleTheme()" title="Toggle theme"></button>
+    <button class="btn-ghost" onclick="location.href='dashboard.html'">Log In</button>
+    <button class="btn-primary" onclick="location.href='dashboard.html'">Sign Up Free</button>
+  </div>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-badge">
+    <span class="badge-dot"></span>
+    Using real market data — zero real money
+  </div>
+  <h1>LEARN INVESTING<br/>WITHOUT RISK</h1>
+  <p class="hero-sub">Trade real stocks with $10,000 in virtual cash. Build skills, understand the market, and gain confidence — before investing a single dollar.</p>
+  <div class="hero-cta">
+    <button class="btn-hero btn-hero-primary" onclick="location.href='dashboard.html'">Start Simulating Free</button>
+    <button class="btn-hero btn-hero-secondary" onclick="location.href='dashboard.html'">View Demo Dashboard</button>
+  </div>
+
+  <!-- Mini dashboard preview -->
+  <div class="hero-preview">
+    <div class="preview-bar">
+      <div class="traffic-dot" style="background:#f6465d"></div>
+      <div class="traffic-dot" style="background:#f0b90b"></div>
+      <div class="traffic-dot" style="background:#0ecb81"></div>
+    </div>
+    <div class="preview-body">
+      <div class="preview-card">
+        <div class="preview-label">Portfolio Value</div>
+        <div class="preview-value">$12,843.50</div>
+        <div class="preview-change up">▲ +$843.50 (+7.1%) all time</div>
+      </div>
+      <div class="preview-card">
+        <div class="preview-label">Today's Change</div>
+        <div class="preview-value up">+$218.20</div>
+        <div class="preview-change up">+1.73% today</div>
+      </div>
+      <div class="preview-card preview-chart">
+        <div class="preview-label">Portfolio Performance (30 days)</div>
+        <svg class="chart-svg" viewBox="0 0 800 80" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="heroGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#0ecb81" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#0ecb81" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path d="M0,65 L27,62 L54,66 L81,58 L108,52 L135,56 L162,48 L189,43 L216,46 L243,38 L270,34 L297,37 L324,30 L351,25 L378,28 L405,21 L432,18 L459,22 L486,16 L513,13 L540,17 L567,11 L594,14 L621,8 L648,5 L675,9 L702,4 L729,7 L756,3 L783,2 L800,1 L800,80 L0,80 Z" fill="url(#heroGrad)"/>
+          <path d="M0,65 L27,62 L54,66 L81,58 L108,52 L135,56 L162,48 L189,43 L216,46 L243,38 L270,34 L297,37 L324,30 L351,25 L378,28 L405,21 L432,18 L459,22 L486,16 L513,13 L540,17 L567,11 L594,14 L621,8 L648,5 L675,9 L702,4 L729,7 L756,3 L783,2 L800,1" fill="none" stroke="#0ecb81" stroke-width="2"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Stats bar -->
+<div class="stats-bar">
+  <div class="stat"><div class="stat-number">$10K</div><div class="stat-label">Virtual cash to start</div></div>
+  <div class="stat"><div class="stat-number">500+</div><div class="stat-label">Real stocks to trade</div></div>
+  <div class="stat"><div class="stat-number">Live</div><div class="stat-label">Real market data</div></div>
+  <div class="stat"><div class="stat-number">Free</div><div class="stat-label">Always free to use</div></div>
+</div>
+
+<!-- Features -->
+<section>
+  <div class="section-label">Why StockSim?</div>
+  <h2 class="section-title">Everything you need to learn investing</h2>
+  <p class="section-sub">No jargon, no complexity — just the tools teens need to actually understand the market.</p>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon icon-green">📈</div>
+      <div class="feature-title">Real Stock Data</div>
+      <div class="feature-desc">Trade with live market prices from real exchanges. See exactly how real stocks perform — Apple, NVIDIA, Tesla and 500+ more.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon icon-purple">🎓</div>
+      <div class="feature-title">Learn As You Trade</div>
+      <div class="feature-desc">Every trade comes with smart tips. Understand concepts like diversification, P/E ratios, and risk — right when it matters.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon icon-amber">🏆</div>
+      <div class="feature-title">Compete &amp; Level Up</div>
+      <div class="feature-desc">Earn XP, unlock achievements, and climb the leaderboard. Learning finance has never felt like a game — until now.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon icon-green">💼</div>
+      <div class="feature-title">Portfolio Tracking</div>
+      <div class="feature-desc">Monitor your holdings, track gains and losses, and see your diversification score — just like a real brokerage.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon icon-purple">🔔</div>
+      <div class="feature-title">Watchlists &amp; Alerts</div>
+      <div class="feature-desc">Save stocks you're interested in, watch their performance, and get simulated price alerts to practice timing.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon icon-amber">📊</div>
+      <div class="feature-title">Interactive Charts</div>
+      <div class="feature-desc">View 1-day to all-time history, zoom in on price action, and analyze volume — the same tools real traders use.</div>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<div class="how-section">
+  <div class="how-inner">
+    <div class="section-label">Get started in minutes</div>
+    <h2 class="section-title">How it works</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-title">Create your account</div>
+        <div class="step-desc">Sign up free in under 30 seconds. No payment info required. You get $10,000 in virtual cash instantly.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-title">Browse &amp; research stocks</div>
+        <div class="step-desc">Search any real stock, analyze charts, read metrics, and understand what makes a company's stock move.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-title">Build your portfolio</div>
+        <div class="step-desc">Buy and sell stocks, track your performance, earn achievements, and learn from every decision you make.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Concepts -->
+<section>
+  <div class="section-label">What you'll learn</div>
+  <h2 class="section-title">Real investing concepts</h2>
+  <p class="section-sub">StockSim teaches the concepts you actually need to invest intelligently.</p>
+  <div class="concepts-grid">
+    <div class="concept-chip">Stocks &amp; Shares</div>
+    <div class="concept-chip">Supply &amp; Demand</div>
+    <div class="concept-chip">Portfolio Diversification</div>
+    <div class="concept-chip">Realized vs Unrealized Gains</div>
+    <div class="concept-chip">Risk vs Reward</div>
+    <div class="concept-chip">Compound Interest</div>
+    <div class="concept-chip">Market Indices</div>
+    <div class="concept-chip">Volume &amp; Liquidity</div>
+    <div class="concept-chip">Open / High / Low / Close</div>
+    <div class="concept-chip">Market Cap</div>
+    <div class="concept-chip">P/E Ratio</div>
+    <div class="concept-chip">Sector Allocation</div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section">
+  <h2 class="cta-title">Ready to start investing<br/>without the risk?</h2>
+  <p class="cta-sub">Join thousands of students learning the market — for free.</p>
+  <button class="btn-hero btn-hero-primary" onclick="location.href='dashboard.html'">Create Free Account</button>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span style="font-weight:600;color:var(--muted)">StockSim</span>
+  </div>
+  <div>© 2025 StockSim. Educational use only. Not financial advice.</div>
+  <div style="display:flex;gap:20px;">
+    <a href="#" style="color:var(--dim)">About</a>
+    <a href="#" style="color:var(--dim)">FAQ</a>
+    <a href="#" style="color:var(--dim)">Contact</a>
+  </div>
+</footer>
+
+<script>
+  function toggleTheme() {
+    const t = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', t);
+    localStorage.setItem('ss-theme', t);
+  }
+  (function() {
+    const t = localStorage.getItem('ss-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+</body>
+</html>

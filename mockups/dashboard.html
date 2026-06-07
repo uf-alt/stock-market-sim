@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — StockSim</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0e0b08;
+      --surface: #17130f;
+      --surface2: #1f1a13;
+      --border: #2c2218;
+      --text: #f0ebe3;
+      --muted: #9a8e80;
+      --dim: #5c5044;
+      --green: #0ecb81;
+      --green-dim: rgba(14,203,129,0.12);
+      --red: #f6465d;
+      --red-dim: rgba(246,70,93,0.12);
+      --accent: #c96520;
+      --accent-dim: rgba(201,101,32,0.15);
+      --amber: #f0b90b;
+      --amber-dim: rgba(240,185,11,0.12);
+      --sidebar-w: 220px;
+      --topbar-h: 60px;
+      --r: 14px;
+      --font: 'DM Sans', -apple-system, system-ui, sans-serif;
+      --font-display: 'Playfair Display', Georgia, serif;
+    }
+    html, body { height: 100%; overflow: hidden; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; line-height: 1.5; display: flex; }
+    a { color: inherit; text-decoration: none; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: var(--sidebar-w); height: 100vh;
+      background: var(--surface); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; flex-shrink: 0;
+    }
+    .sidebar-logo {
+      display: flex; align-items: center; gap: 10px;
+      padding: 20px 18px; border-bottom: 1px solid var(--border);
+    }
+    .logo-mark {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), #e07830);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 15px; color: #fff; flex-shrink: 0;
+    }
+    .logo-text { font-weight: 700; font-size: 17px; }
+    .sidebar-nav { flex: 1; padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
+    .nav-section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--dim); padding: 10px 8px 4px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; border-radius: 8px;
+      color: var(--muted); font-size: 13.5px; font-weight: 500;
+      cursor: pointer; transition: background 0.15s, color 0.15s;
+    }
+    .nav-item:hover { background: var(--surface2); color: var(--text); }
+    .nav-item.active { background: var(--accent-dim); color: var(--accent); }
+    .nav-icon { width: 16px; text-align: center; }
+    .nav-badge {
+      margin-left: auto; background: var(--accent); color: #fff;
+      font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px;
+    }
+    .sidebar-footer {
+      padding: 14px; border-top: 1px solid var(--border);
+    }
+    .user-card {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px; border-radius: 8px; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .user-card:hover { background: var(--surface2); }
+    .avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: linear-gradient(135deg, #a8521a, #e07830);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 13px; color: #fff; flex-shrink: 0;
+    }
+    .user-name { font-size: 13px; font-weight: 600; }
+    .user-level { font-size: 11px; color: var(--muted); }
+
+    /* MAIN AREA */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* TOPBAR */
+    .topbar {
+      height: var(--topbar-h); background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; padding: 0 24px; gap: 14px; flex-shrink: 0;
+    }
+    .page-title { font-size: 17px; font-weight: 700; }
+    .topbar-search {
+      flex: 1; max-width: 360px; margin-left: auto;
+      display: flex; align-items: center; gap: 8px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 7px 12px; color: var(--muted); font-size: 13px;
+    }
+    .topbar-actions { display: flex; align-items: center; gap: 10px; }
+    .icon-btn {
+      width: 34px; height: 34px; border-radius: 8px;
+      background: transparent; border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--muted); font-size: 14px;
+      transition: background 0.15s; position: relative;
+    }
+    .icon-btn:hover { background: var(--surface2); color: var(--text); }
+    .notif-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--accent);
+      position: absolute; top: 6px; right: 6px;
+      border: 2px solid var(--surface);
+    }
+
+    /* PAGE CONTENT */
+    .content { flex: 1; overflow-y: auto; padding: 24px; }
+
+    /* GREETING */
+    .greeting { margin-bottom: 24px; }
+    .greeting h2 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .greeting p { color: var(--muted); font-size: 14px; }
+
+    /* GRID ROWS */
+    .row { display: grid; gap: 16px; margin-bottom: 16px; }
+    .row-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .row-2-1 { grid-template-columns: 2fr 1fr; }
+    .row-2 { grid-template-columns: 1fr 1fr; }
+
+    /* CARD */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 20px;
+    }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .card-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); }
+    .card-action { font-size: 12px; color: var(--accent); cursor: pointer; }
+    .card-action:hover { text-decoration: underline; }
+
+    /* PORTFOLIO SUMMARY CARD */
+    .portfolio-value { font-size: 34px; font-weight: 800; letter-spacing: -1px; margin-bottom: 4px; }
+    .portfolio-change { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+    .change-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--green-dim); color: var(--green);
+      border-radius: 6px; padding: 3px 8px; font-size: 13px; font-weight: 600;
+    }
+    .change-badge.red { background: var(--red-dim); color: var(--red); }
+    .change-sub { font-size: 13px; color: var(--muted); }
+    .portfolio-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .pstat { background: var(--surface2); border-radius: 8px; padding: 12px 14px; }
+    .pstat-label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .pstat-value { font-size: 16px; font-weight: 700; }
+
+    /* XP CARD */
+    .xp-level { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+    .xp-number { font-size: 32px; font-weight: 800; color: var(--accent); margin-bottom: 4px; }
+    .xp-subtitle { font-size: 12px; color: var(--dim); margin-bottom: 14px; }
+    .xp-bar-bg { height: 8px; background: var(--surface2); border-radius: 100px; overflow: hidden; margin-bottom: 8px; }
+    .xp-bar-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg, var(--accent), #e07830); }
+    .xp-progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); }
+    .recent-achievements { margin-top: 16px; }
+    .achievement { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--border); }
+    .ach-icon { font-size: 16px; }
+    .ach-info { flex: 1; }
+    .ach-name { font-size: 12px; font-weight: 600; }
+    .ach-xp { font-size: 11px; color: var(--accent); }
+
+    /* STREAK CARD */
+    .streak-num { font-size: 40px; font-weight: 900; color: var(--amber); margin-bottom: 4px; }
+    .streak-label { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+    .streak-days { display: flex; gap: 6px; margin-top: 12px; }
+    .day-dot {
+      width: 28px; height: 28px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 600; color: var(--dim);
+    }
+    .day-dot.done { background: var(--amber-dim); color: var(--amber); }
+    .day-dot.today { background: var(--amber); color: #fff; }
+    .day-dot.miss { background: var(--border); }
+
+    /* PIE CHART */
+    .alloc-chart-wrap { display: flex; align-items: center; gap: 24px; }
+    .pie {
+      width: 120px; height: 120px; border-radius: 50%; flex-shrink: 0;
+      background: conic-gradient(
+        #c96520 0% 32%,
+        #0ecb81 32% 56%,
+        #f0b90b 56% 74%,
+        #f6465d 74% 88%,
+        #4d5872 88% 100%
+      );
+    }
+    .pie-legend { display: flex; flex-direction: column; gap: 8px; }
+    .legend-item { display: flex; align-items: center; gap: 8px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+    .legend-ticker { font-size: 13px; font-weight: 600; width: 40px; }
+    .legend-pct { font-size: 12px; color: var(--muted); }
+
+    /* HOLDINGS TABLE */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; padding: 0 8px 10px; font-weight: 600; }
+    th:not(:first-child) { text-align: right; }
+    td { padding: 10px 8px; border-top: 1px solid var(--border); }
+    td:not(:first-child) { text-align: right; }
+    tr:hover td { background: var(--surface2); }
+    .ticker-cell { display: flex; align-items: center; gap: 10px; }
+    .ticker-logo {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: var(--surface2); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 800; color: var(--muted);
+    }
+    .ticker-sym { font-weight: 700; }
+    .ticker-name { font-size: 11px; color: var(--dim); }
+
+    /* SPARKLINE */
+    .sparkline { display: block; }
+
+    /* WATCHLIST */
+    .watchlist-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--border); }
+    .watch-sym { font-size: 14px; font-weight: 700; width: 50px; }
+    .watch-price { font-size: 13px; font-weight: 600; margin-left: auto; }
+    .watch-change { font-size: 12px; font-weight: 600; width: 60px; text-align: right; }
+    .watch-name { font-size: 11px; color: var(--dim); flex: 1; }
+
+    /* MARKET MOVERS */
+    .mover { display: flex; align-items: center; padding: 10px 0; border-top: 1px solid var(--border); gap: 10px; }
+    .mover-logo { width: 30px; height: 30px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: var(--muted); flex-shrink: 0; }
+    .mover-info { flex: 1; }
+    .mover-sym { font-size: 13px; font-weight: 700; }
+    .mover-name { font-size: 11px; color: var(--dim); }
+    .mover-price { font-size: 13px; font-weight: 600; margin-left: auto; }
+    .mover-change { font-size: 12px; font-weight: 700; padding: 2px 7px; border-radius: 5px; }
+    .gain { color: var(--green); }
+    .loss { color: var(--red); }
+    .gain-bg { background: var(--green-dim); color: var(--green); }
+    .loss-bg { background: var(--red-dim); color: var(--red); }
+
+    /* DIVIDER TABS */
+    .tabs { display: flex; gap: 2px; background: var(--surface2); border-radius: 8px; padding: 3px; margin-bottom: 12px; }
+    .tab { flex: 1; text-align: center; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+    .tab.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+
+    /* LIGHT MODE */
+    [data-theme="light"] {
+      --bg: #f0ebe3; --surface: #faf7f2; --surface2: #e8e0d5;
+      --border: #d4cab8; --text: #1c1510; --muted: #7a6e65; --dim: #b0a698;
+    }
+    h1, h2, h3 { font-family: var(--font-display); }
+    .theme-toggle::after { content: '☀'; font-size: 15px; }
+    [data-theme="light"] .theme-toggle::after { content: '🌙'; }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-text">StockSim</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <a href="dashboard.html" class="nav-item active">
+      <span class="nav-icon">▦</span> Dashboard
+    </a>
+    <a href="markets.html" class="nav-item">
+      <span class="nav-icon">↗</span> Markets
+    </a>
+    <a href="portfolio.html" class="nav-item">
+      <span class="nav-icon">◉</span> Portfolio
+    </a>
+    <a href="#" class="nav-item">
+      <span class="nav-icon">♡</span> Watchlist
+    </a>
+    <div class="nav-section-label">Learn</div>
+    <a href="#" class="nav-item">
+      <span class="nav-icon">✦</span> Learn
+      <span class="nav-badge">3</span>
+    </a>
+    <a href="#" class="nav-item">
+      <span class="nav-icon">★</span> Achievements
+    </a>
+    <a href="#" class="nav-item">
+      <span class="nav-icon">≡</span> Leaderboards
+    </a>
+    <div class="nav-section-label">Account</div>
+    <a href="#" class="nav-item">
+      <span class="nav-icon">⚙</span> Settings
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="avatar">AJ</div>
+      <div>
+        <div class="user-name">Alex Johnson</div>
+        <div class="user-level">Level 7 · 3,240 XP</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- Main area -->
+<div class="main">
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="page-title">Dashboard</div>
+    <div class="topbar-search">
+      <span>🔍</span>
+      <span>Search stocks...</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn theme-toggle" onclick="toggleTheme()" title="Toggle theme"></button>
+      <div class="icon-btn">
+        🔔
+        <div class="notif-dot"></div>
+      </div>
+      <div class="avatar" style="width:34px;height:34px;font-size:13px;cursor:pointer;">AJ</div>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <main class="content">
+    <div class="greeting">
+      <h2>Good morning, Alex 👋</h2>
+      <p>Markets are open · Last updated 2 minutes ago</p>
+    </div>
+
+    <!-- Row 1: Portfolio, XP, Streak -->
+    <div class="row row-3">
+
+      <!-- Portfolio Summary -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Portfolio Value</span>
+          <a href="portfolio.html" class="card-action">View all →</a>
+        </div>
+        <div class="portfolio-value">$12,843.50</div>
+        <div class="portfolio-change">
+          <span class="change-badge">▲ +$218.20</span>
+          <span class="change-sub">+1.73% today</span>
+        </div>
+        <div class="portfolio-stats">
+          <div class="pstat">
+            <div class="pstat-label">Total Invested</div>
+            <div class="pstat-value">$10,000.00</div>
+          </div>
+          <div class="pstat">
+            <div class="pstat-label">Unrealized Gain</div>
+            <div class="pstat-value gain">+$2,843.50</div>
+          </div>
+          <div class="pstat">
+            <div class="pstat-label">Realized Gain</div>
+            <div class="pstat-value gain">+$420.00</div>
+          </div>
+          <div class="pstat">
+            <div class="pstat-label">Cash Available</div>
+            <div class="pstat-value">$1,205.80</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- XP Card -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">XP &amp; Level</span>
+          <a href="#" class="card-action">Achievements →</a>
+        </div>
+        <div class="xp-level">Level 7</div>
+        <div class="xp-number">3,240 XP</div>
+        <div class="xp-subtitle">760 XP to Level 8</div>
+        <div class="xp-bar-bg">
+          <div class="xp-bar-fill" style="width: 81%"></div>
+        </div>
+        <div class="xp-progress-label"><span>3,240</span><span>4,000</span></div>
+        <div class="recent-achievements">
+          <div class="achievement">
+            <span class="ach-icon">🎯</span>
+            <div class="ach-info">
+              <div class="ach-name">First Trade</div>
+              <div class="ach-xp">+50 XP · unlocked</div>
+            </div>
+          </div>
+          <div class="achievement">
+            <span class="ach-icon">📊</span>
+            <div class="ach-info">
+              <div class="ach-name">Diversification Expert</div>
+              <div class="ach-xp">+100 XP · unlocked</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Streak Card -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Login Streak</span>
+        </div>
+        <div class="streak-num">🔥 7</div>
+        <div class="streak-label">day streak — keep it up!</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">This week</div>
+        <div class="streak-days">
+          <div class="day-dot done">M</div>
+          <div class="day-dot done">T</div>
+          <div class="day-dot done">W</div>
+          <div class="day-dot done">T</div>
+          <div class="day-dot done">F</div>
+          <div class="day-dot today">S</div>
+          <div class="day-dot miss">S</div>
+        </div>
+        <div style="margin-top:16px;background:var(--amber-dim);border-radius:8px;padding:10px 12px;">
+          <div style="font-size:12px;font-weight:600;color:var(--amber);">🏆 7-day milestone</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">+100 bonus XP unlocked!</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Allocation + Holdings -->
+    <div class="row row-2-1">
+
+      <!-- Holdings Table -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Your Holdings</span>
+          <a href="portfolio.html" class="card-action">Full portfolio →</a>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Stock</th>
+                <th>Shares</th>
+                <th>Avg Cost</th>
+                <th>Current</th>
+                <th>Value</th>
+                <th>Gain/Loss</th>
+                <th>Chart</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div class="ticker-cell">
+                    <div class="ticker-logo">AAPL</div>
+                    <div><div class="ticker-sym">AAPL</div><div class="ticker-name">Apple Inc.</div></div>
+                  </div>
+                </td>
+                <td>10</td>
+                <td>$180.00</td>
+                <td>$210.42</td>
+                <td>$2,104.20</td>
+                <td class="gain">+$304.20</td>
+                <td><svg class="sparkline" viewBox="0 0 60 24" width="60" height="24"><path d="M0,18 L10,15 L20,17 L30,11 L40,9 L50,7 L60,4" fill="none" stroke="#0ecb81" stroke-width="1.5"/></svg></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="ticker-cell">
+                    <div class="ticker-logo">NVDA</div>
+                    <div><div class="ticker-sym">NVDA</div><div class="ticker-name">NVIDIA Corp.</div></div>
+                  </div>
+                </td>
+                <td>4</td>
+                <td>$820.00</td>
+                <td>$945.10</td>
+                <td>$3,780.40</td>
+                <td class="gain">+$500.40</td>
+                <td><svg class="sparkline" viewBox="0 0 60 24" width="60" height="24"><path d="M0,19 L10,14 L20,17 L30,9 L40,12 L50,6 L60,3" fill="none" stroke="#0ecb81" stroke-width="1.5"/></svg></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="ticker-cell">
+                    <div class="ticker-logo">MSFT</div>
+                    <div><div class="ticker-sym">MSFT</div><div class="ticker-name">Microsoft Corp.</div></div>
+                  </div>
+                </td>
+                <td>6</td>
+                <td>$390.00</td>
+                <td>$428.92</td>
+                <td>$2,573.52</td>
+                <td class="gain">+$233.52</td>
+                <td><svg class="sparkline" viewBox="0 0 60 24" width="60" height="24"><path d="M0,16 L10,14 L20,15 L30,12 L40,10 L50,9 L60,8" fill="none" stroke="#0ecb81" stroke-width="1.5"/></svg></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="ticker-cell">
+                    <div class="ticker-logo">TSLA</div>
+                    <div><div class="ticker-sym">TSLA</div><div class="ticker-name">Tesla Inc.</div></div>
+                  </div>
+                </td>
+                <td>8</td>
+                <td>$210.00</td>
+                <td>$178.50</td>
+                <td>$1,428.00</td>
+                <td class="loss">−$252.00</td>
+                <td><svg class="sparkline" viewBox="0 0 60 24" width="60" height="24"><path d="M0,5 L10,8 L20,6 L30,10 L40,13 L50,16 L60,19" fill="none" stroke="#f6465d" stroke-width="1.5"/></svg></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Allocation Chart -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Allocation</span>
+        </div>
+        <div style="display:flex;justify-content:center;margin-bottom:16px;">
+          <div class="pie"></div>
+        </div>
+        <div class="pie-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#c96520"></div><span class="legend-ticker">NVDA</span><span class="legend-pct">32%</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#0ecb81"></div><span class="legend-ticker">AAPL</span><span class="legend-pct">24%</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#f0b90b"></div><span class="legend-ticker">MSFT</span><span class="legend-pct">18%</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#f6465d"></div><span class="legend-ticker">TSLA</span><span class="legend-pct">14%</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#4d5872"></div><span class="legend-ticker">Cash</span><span class="legend-pct">12%</span></div>
+        </div>
+        <div style="margin-top:14px;padding:10px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);">
+          <div style="font-size:11px;color:var(--dim);margin-bottom:4px;">Diversification Score</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="font-size:20px;font-weight:800;color:var(--green)">74</div>
+            <div style="font-size:11px;color:var(--muted)">/100 · Good</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3: Watchlist + Market Movers -->
+    <div class="row row-2">
+
+      <!-- Watchlist -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Watchlist</span>
+          <a href="#" class="card-action">Manage →</a>
+        </div>
+        <div class="watchlist-item">
+          <span class="watch-sym">AMZN</span>
+          <span class="watch-name">Amazon.com</span>
+          <span class="watch-price">$186.40</span>
+          <span class="watch-change gain">+1.4%</span>
+        </div>
+        <div class="watchlist-item">
+          <span class="watch-sym">GOOGL</span>
+          <span class="watch-name">Alphabet Inc.</span>
+          <span class="watch-price">$172.80</span>
+          <span class="watch-change gain">+0.8%</span>
+        </div>
+        <div class="watchlist-item">
+          <span class="watch-sym">META</span>
+          <span class="watch-name">Meta Platforms</span>
+          <span class="watch-price">$512.60</span>
+          <span class="watch-change loss">−0.5%</span>
+        </div>
+        <div class="watchlist-item">
+          <span class="watch-sym">AMD</span>
+          <span class="watch-name">Advanced Micro Devices</span>
+          <span class="watch-price">$162.30</span>
+          <span class="watch-change gain">+3.2%</span>
+        </div>
+      </div>
+
+      <!-- Market Movers -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Market Movers</span>
+          <a href="markets.html" class="card-action">Browse →</a>
+        </div>
+        <div class="tabs">
+          <div class="tab active">Gainers</div>
+          <div class="tab">Losers</div>
+        </div>
+        <div class="mover">
+          <div class="mover-logo">SMCI</div>
+          <div class="mover-info"><div class="mover-sym">SMCI</div><div class="mover-name">Super Micro Computer</div></div>
+          <div class="mover-price">$846.20</div>
+          <div class="mover-change gain-bg">+8.4%</div>
+        </div>
+        <div class="mover">
+          <div class="mover-logo">AMD</div>
+          <div class="mover-info"><div class="mover-sym">AMD</div><div class="mover-name">Advanced Micro Devices</div></div>
+          <div class="mover-price">$162.30</div>
+          <div class="mover-change gain-bg">+3.2%</div>
+        </div>
+        <div class="mover">
+          <div class="mover-logo">NVDA</div>
+          <div class="mover-info"><div class="mover-sym">NVDA</div><div class="mover-name">NVIDIA Corp.</div></div>
+          <div class="mover-price">$945.10</div>
+          <div class="mover-change gain-bg">+2.9%</div>
+        </div>
+        <div class="mover">
+          <div class="mover-logo">AAPL</div>
+          <div class="mover-info"><div class="mover-sym">AAPL</div><div class="mover-name">Apple Inc.</div></div>
+          <div class="mover-price">$210.42</div>
+          <div class="mover-change gain-bg">+2.1%</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  function toggleTheme() {
+    const t = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', t);
+    localStorage.setItem('ss-theme', t);
+  }
+  (function() {
+    const t = localStorage.getItem('ss-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+</body>
+</html>

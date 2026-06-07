@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AAPL — Apple Inc. — StockSim</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0e0b08; --surface: #17130f; --surface2: #1f1a13;
+      --border: #2c2218; --text: #f0ebe3; --muted: #9a8e80; --dim: #5c5044;
+      --green: #0ecb81; --green-dim: rgba(14,203,129,0.12);
+      --red: #f6465d; --red-dim: rgba(246,70,93,0.12);
+      --accent: #c96520; --accent-dim: rgba(201,101,32,0.15);
+      --amber: #f0b90b; --amber-dim: rgba(240,185,11,0.12);
+      --sidebar-w: 220px; --topbar-h: 60px; --r: 14px;
+      --font: 'DM Sans', -apple-system, system-ui, sans-serif;
+      --font-display: 'Playfair Display', Georgia, serif;
+    }
+    html, body { height: 100%; overflow: hidden; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; line-height: 1.5; display: flex; }
+    a { color: inherit; text-decoration: none; }
+
+    /* SIDEBAR */
+    .sidebar { width: var(--sidebar-w); height: 100vh; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+    .sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 20px 18px; border-bottom: 1px solid var(--border); }
+    .logo-mark { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), #e07830); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; color: #fff; flex-shrink: 0; }
+    .logo-text { font-weight: 700; font-size: 17px; }
+    .sidebar-nav { flex: 1; padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; }
+    .nav-section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--dim); padding: 10px 8px 4px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; color: var(--muted); font-size: 13.5px; font-weight: 500; cursor: pointer; transition: background 0.15s, color 0.15s; }
+    .nav-item:hover { background: var(--surface2); color: var(--text); }
+    .nav-item.active { background: var(--accent-dim); color: var(--accent); }
+    .nav-icon { width: 16px; text-align: center; }
+    .nav-badge { margin-left: auto; background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; }
+    .sidebar-footer { padding: 14px; border-top: 1px solid var(--border); }
+    .user-card { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 8px; cursor: pointer; transition: background 0.15s; }
+    .user-card:hover { background: var(--surface2); }
+    .avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #a8521a, #e07830); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: #fff; flex-shrink: 0; }
+    .user-name { font-size: 13px; font-weight: 600; }
+    .user-level { font-size: 11px; color: var(--muted); }
+
+    /* MAIN */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .topbar { height: var(--topbar-h); background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 24px; gap: 14px; flex-shrink: 0; }
+    .back-btn { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; cursor: pointer; padding: 6px 10px; border-radius: 6px; transition: background 0.15s, color 0.15s; }
+    .back-btn:hover { background: var(--surface2); color: var(--text); }
+    .breadcrumb { font-size: 13px; color: var(--dim); }
+    .breadcrumb span { color: var(--text); font-weight: 600; }
+    .topbar-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+    .icon-btn { width: 34px; height: 34px; border-radius: 8px; background: transparent; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); font-size: 14px; transition: background 0.15s; position: relative; }
+    .icon-btn:hover { background: var(--surface2); }
+    .notif-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); position: absolute; top: 6px; right: 6px; border: 2px solid var(--surface); }
+    .content { flex: 1; overflow-y: auto; padding: 24px; }
+
+    .gain { color: var(--green); }
+    .loss { color: var(--red); }
+    .gain-bg { background: var(--green-dim); color: var(--green); }
+    .loss-bg { background: var(--red-dim); color: var(--red); }
+
+    /* PAGE LAYOUT */
+    .page-grid { display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start; }
+
+    /* STOCK HEADER */
+    .stock-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+    .stock-identity { display: flex; align-items: center; gap: 14px; }
+    .stock-logo { width: 52px; height: 52px; border-radius: 12px; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: var(--muted); }
+    .stock-name-block {}
+    .stock-ticker { font-size: 24px; font-weight: 900; letter-spacing: -0.5px; }
+    .stock-fullname { font-size: 14px; color: var(--muted); margin-top: 2px; }
+    .stock-price-block { text-align: right; }
+    .stock-price { font-size: 32px; font-weight: 900; letter-spacing: -1px; }
+    .price-change { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; }
+    .change-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 6px; font-size: 14px; font-weight: 700; }
+    .watchlist-btn { display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 13px; font-weight: 500; cursor: pointer; font-family: var(--font); transition: all 0.15s; }
+    .watchlist-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .watchlist-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+
+    /* CHART CARD */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); }
+    .chart-card { margin-bottom: 16px; }
+    .chart-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 12px; }
+    .chart-title { font-size: 13px; color: var(--muted); }
+    .timeframe-btns { display: flex; gap: 2px; background: var(--surface2); border-radius: 8px; padding: 3px; }
+    .tf-btn { padding: 5px 12px; border-radius: 6px; border: none; background: transparent; color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: all 0.15s; }
+    .tf-btn:hover { color: var(--text); }
+    .tf-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+    .chart-area { padding: 0 20px 20px; }
+    .chart-price-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); margin-bottom: 4px; padding: 0 4px; }
+    .chart-svg-wrap { width: 100%; }
+    .chart-time-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); margin-top: 6px; padding: 0 4px; }
+
+    /* METRICS GRID */
+    .metrics-card { margin-bottom: 16px; }
+    .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); }
+    .metric { padding: 14px 18px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .metric:nth-child(3n) { border-right: none; }
+    .metric:nth-last-child(-n+3) { border-bottom: none; }
+    .metric-label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .metric-value { font-size: 16px; font-weight: 700; }
+    .metric-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    /* TRADING PANEL */
+    .trading-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 20px; }
+    .panel-header { margin-bottom: 18px; }
+    .panel-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .panel-subtitle { font-size: 12px; color: var(--muted); }
+    .panel-balance { background: var(--surface2); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+    .bal-label { font-size: 11px; color: var(--dim); }
+    .bal-value { font-size: 15px; font-weight: 700; }
+    .panel-tabs { display: flex; gap: 2px; background: var(--surface2); border-radius: 8px; padding: 3px; margin-bottom: 16px; }
+    .ptab { flex: 1; text-align: center; padding: 8px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+    .ptab.buy { color: var(--green); }
+    .ptab.buy.active { background: var(--green-dim); }
+    .ptab.sell { color: var(--red); }
+    .ptab.sell.active { background: var(--red-dim); }
+    .form-group { margin-bottom: 14px; }
+    .form-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--dim); margin-bottom: 6px; display: block; }
+    .quantity-input { display: flex; align-items: center; gap: 8px; }
+    .qty-btn { width: 34px; height: 34px; border-radius: 7px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); font-size: 18px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; flex-shrink: 0; }
+    .qty-btn:hover { background: var(--border); }
+    .qty-field { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 8px 12px; color: var(--text); font-size: 16px; font-weight: 700; text-align: center; font-family: var(--font); outline: none; transition: border-color 0.15s; }
+    .qty-field:focus { border-color: var(--accent); }
+    .cost-breakdown { background: var(--surface2); border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .cost-row { display: flex; justify-content: space-between; font-size: 13px; }
+    .cost-label { color: var(--muted); }
+    .cost-value { font-weight: 600; }
+    .cost-divider { height: 1px; background: var(--border); }
+    .cost-total { display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; }
+    .buy-btn { width: 100%; padding: 13px; border-radius: 9px; border: none; background: var(--green); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; font-family: var(--font); transition: opacity 0.15s, transform 0.1s; margin-bottom: 8px; }
+    .buy-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .sell-btn { width: 100%; padding: 13px; border-radius: 9px; border: 1px solid var(--border); background: transparent; color: var(--text); font-size: 15px; font-weight: 700; cursor: pointer; font-family: var(--font); transition: background 0.15s; }
+    .sell-btn:hover { background: var(--surface2); }
+
+    /* EDUCATIONAL TIP */
+    .edu-tip { background: var(--accent-dim); border: 1px solid rgba(201,101,32,0.25); border-radius: 9px; padding: 12px 14px; margin-top: 14px; }
+    .edu-tip-icon { font-size: 16px; margin-bottom: 6px; }
+    .edu-tip-title { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .edu-tip-text { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+    /* WARNINGS */
+    .warning-banner { background: var(--amber-dim); border: 1px solid rgba(240,185,11,0.25); border-radius: 8px; padding: 10px 14px; display: flex; align-items: flex-start; gap: 8px; margin-top: 10px; }
+    .warn-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+    .warn-text { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .warn-text strong { color: var(--amber); }
+
+    /* HOLDINGS IN THIS STOCK */
+    .holding-info { background: var(--surface2); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; }
+    .holding-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
+    .holding-row:last-child { margin-bottom: 0; }
+    .h-label { color: var(--muted); }
+    .h-value { font-weight: 600; }
+
+    /* LIGHT MODE */
+    [data-theme="light"] {
+      --bg: #f0ebe3; --surface: #faf7f2; --surface2: #e8e0d5;
+      --border: #d4cab8; --text: #1c1510; --muted: #7a6e65; --dim: #b0a698;
+    }
+    h1, h2, h3 { font-family: var(--font-display); }
+    .theme-toggle::after { content: '☀'; font-size: 15px; }
+    [data-theme="light"] .theme-toggle::after { content: '🌙'; }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-text">StockSim</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <a href="dashboard.html" class="nav-item"><span class="nav-icon">▦</span> Dashboard</a>
+    <a href="markets.html" class="nav-item active"><span class="nav-icon">↗</span> Markets</a>
+    <a href="portfolio.html" class="nav-item"><span class="nav-icon">◉</span> Portfolio</a>
+    <a href="#" class="nav-item"><span class="nav-icon">♡</span> Watchlist</a>
+    <div class="nav-section-label">Learn</div>
+    <a href="#" class="nav-item"><span class="nav-icon">✦</span> Learn<span class="nav-badge">3</span></a>
+    <a href="#" class="nav-item"><span class="nav-icon">★</span> Achievements</a>
+    <a href="#" class="nav-item"><span class="nav-icon">≡</span> Leaderboards</a>
+    <div class="nav-section-label">Account</div>
+    <a href="#" class="nav-item"><span class="nav-icon">⚙</span> Settings</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="avatar">AJ</div>
+      <div><div class="user-name">Alex Johnson</div><div class="user-level">Level 7 · 3,240 XP</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- Main -->
+<div class="main">
+  <header class="topbar">
+    <a href="markets.html" class="back-btn">← Markets</a>
+    <span class="breadcrumb">/ <span>AAPL</span></span>
+    <div class="topbar-actions">
+      <button class="icon-btn theme-toggle" onclick="toggleTheme()" title="Toggle theme"></button>
+      <div class="icon-btn">🔔<div class="notif-dot"></div></div>
+      <div class="avatar" style="width:34px;height:34px;font-size:13px;cursor:pointer;">AJ</div>
+    </div>
+  </header>
+
+  <main class="content">
+
+    <!-- Stock Header -->
+    <div class="stock-header">
+      <div class="stock-identity">
+        <div class="stock-logo">AAPL</div>
+        <div class="stock-name-block">
+          <div class="stock-ticker">AAPL</div>
+          <div class="stock-fullname">Apple Inc. · NASDAQ · Technology</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="watchlist-btn active">♡ Watchlist</button>
+        <div class="stock-price-block">
+          <div class="stock-price">$210.42</div>
+          <div class="price-change">
+            <span class="change-badge gain-bg">▲ +$4.32 (+2.10%)</span>
+            <span style="font-size:12px;color:var(--muted)">Today</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-grid">
+
+      <!-- Left Column: Chart + Metrics -->
+      <div>
+
+        <!-- Chart Card -->
+        <div class="card chart-card">
+          <div class="chart-header">
+            <div class="chart-title">Price History</div>
+            <div class="timeframe-btns">
+              <button class="tf-btn">1D</button>
+              <button class="tf-btn">1W</button>
+              <button class="tf-btn active">1M</button>
+              <button class="tf-btn">3M</button>
+              <button class="tf-btn">1Y</button>
+              <button class="tf-btn">ALL</button>
+            </div>
+          </div>
+          <div class="chart-area">
+            <div class="chart-price-label">
+              <span>$220</span><span></span><span>$200</span><span></span><span>$180</span>
+            </div>
+            <div class="chart-svg-wrap">
+              <svg viewBox="0 0 700 200" preserveAspectRatio="none" style="width:100%;height:200px;display:block;">
+                <defs>
+                  <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#0ecb81" stop-opacity="0.3"/>
+                    <stop offset="100%" stop-color="#0ecb81" stop-opacity="0"/>
+                  </linearGradient>
+                  <!-- Crosshair line -->
+                </defs>
+                <!-- Grid lines -->
+                <line x1="0" y1="50" x2="700" y2="50" stroke="#1f2433" stroke-width="1"/>
+                <line x1="0" y1="100" x2="700" y2="100" stroke="#1f2433" stroke-width="1"/>
+                <line x1="0" y1="150" x2="700" y2="150" stroke="#1f2433" stroke-width="1"/>
+                <!-- Area -->
+                <path d="M0,160 L23,155 L47,162 L70,148 L93,140 L117,145 L140,133 L163,126 L187,130 L210,118 L233,112 L257,116 L280,104 L303,96 L327,100 L350,88 L373,82 L397,87 L420,74 L443,68 L467,72 L490,60 L513,54 L537,58 L560,46 L583,40 L607,44 L630,34 L653,28 L677,32 L700,22 L700,200 L0,200 Z" fill="url(#chartGrad)"/>
+                <!-- Line -->
+                <path d="M0,160 L23,155 L47,162 L70,148 L93,140 L117,145 L140,133 L163,126 L187,130 L210,118 L233,112 L257,116 L280,104 L303,96 L327,100 L350,88 L373,82 L397,87 L420,74 L443,68 L467,72 L490,60 L513,54 L537,58 L560,46 L583,40 L607,44 L630,34 L653,28 L677,32 L700,22" fill="none" stroke="#0ecb81" stroke-width="2.5"/>
+                <!-- Hover dot (latest price) -->
+                <circle cx="700" cy="22" r="5" fill="#0ecb81" stroke="#0e0b08" stroke-width="2"/>
+                <!-- Tooltip -->
+                <rect x="570" y="2" width="110" height="30" rx="5" fill="#2c2218"/>
+                <text x="576" y="14" fill="#8892a4" font-size="9" font-family="system-ui">May 10</text>
+                <text x="576" y="26" fill="#e8eaf0" font-size="11" font-weight="700" font-family="system-ui">$210.42</text>
+              </svg>
+            </div>
+            <div class="chart-time-label">
+              <span>Apr 10</span><span>Apr 17</span><span>Apr 24</span><span>May 1</span><span>May 8</span><span>May 10</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metrics Card -->
+        <div class="card metrics-card">
+          <div style="padding:14px 18px;border-bottom:1px solid var(--border);">
+            <span style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);">Key Metrics</span>
+          </div>
+          <div class="metrics-grid">
+            <div class="metric">
+              <div class="metric-label">Open</div>
+              <div class="metric-value">$207.84</div>
+              <div class="metric-sub">Today</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">High</div>
+              <div class="metric-value gain">$211.30</div>
+              <div class="metric-sub">Today</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Low</div>
+              <div class="metric-value">$206.50</div>
+              <div class="metric-sub">Today</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Volume</div>
+              <div class="metric-value">58.2M</div>
+              <div class="metric-sub">Avg: 54.8M</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Market Cap</div>
+              <div class="metric-value">$3.24T</div>
+              <div class="metric-sub">Large Cap</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">P/E Ratio</div>
+              <div class="metric-value">31.4×</div>
+              <div class="metric-sub">Industry: 28.2×</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">52W High</div>
+              <div class="metric-value">$232.15</div>
+              <div class="metric-sub">—9.4% from high</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">52W Low</div>
+              <div class="metric-value">$164.08</div>
+              <div class="metric-sub">+28.3% from low</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Dividend</div>
+              <div class="metric-value">$0.99</div>
+              <div class="metric-sub">0.47% yield</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Educational Tip (inline) -->
+        <div class="card" style="padding:16px 18px;">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;">📚 Learn: P/E Ratio</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.7;">The <strong style="color:var(--text)">Price-to-Earnings (P/E) ratio</strong> compares a company's stock price to its earnings per share. A P/E of 31.4× means investors pay $31.40 for every $1 Apple earns annually. Higher P/E often means the market expects strong future growth.</div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Trading Panel -->
+      <div>
+        <div class="trading-panel">
+          <div class="panel-header">
+            <div class="panel-title">Trade AAPL</div>
+            <div class="panel-subtitle">Apple Inc. · $210.42 per share</div>
+          </div>
+
+          <div class="panel-balance">
+            <span class="bal-label">Available Cash</span>
+            <span class="bal-value">$1,205.80</span>
+          </div>
+
+          <div class="panel-tabs">
+            <div class="ptab buy active">Buy</div>
+            <div class="ptab sell">Sell</div>
+          </div>
+
+          <!-- Your Current Holding -->
+          <div class="holding-info">
+            <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Your Position</div>
+            <div class="holding-row"><span class="h-label">Shares owned</span><span class="h-value">10</span></div>
+            <div class="holding-row"><span class="h-label">Avg. cost</span><span class="h-value">$180.00</span></div>
+            <div class="holding-row"><span class="h-label">Current value</span><span class="h-value">$2,104.20</span></div>
+            <div class="holding-row"><span class="h-label">Unrealized gain</span><span class="h-value gain">+$304.20 (+16.9%)</span></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Quantity (shares)</label>
+            <div class="quantity-input">
+              <button class="qty-btn">−</button>
+              <input class="qty-field" type="number" value="5" min="1" />
+              <button class="qty-btn">+</button>
+            </div>
+          </div>
+
+          <div class="cost-breakdown">
+            <div class="cost-row">
+              <span class="cost-label">5 × $210.42</span>
+              <span class="cost-value">$1,052.10</span>
+            </div>
+            <div class="cost-row">
+              <span class="cost-label">Trading fee</span>
+              <span class="cost-value">$0.00</span>
+            </div>
+            <div class="cost-divider"></div>
+            <div class="cost-total">
+              <span>Total cost</span>
+              <span>$1,052.10</span>
+            </div>
+            <div class="cost-row" style="margin-top:2px;">
+              <span class="cost-label">Remaining cash</span>
+              <span class="cost-value gain">$153.70</span>
+            </div>
+          </div>
+
+          <button class="buy-btn">Buy 5 Shares · $1,052.10</button>
+          <button class="sell-btn">Sell Shares</button>
+
+          <!-- Warning -->
+          <div class="warning-banner">
+            <span class="warn-icon">⚠️</span>
+            <div class="warn-text">After this purchase, <strong>AAPL would be 36%</strong> of your portfolio. Consider diversifying — concentrating in one stock increases risk.</div>
+          </div>
+
+          <!-- Educational tip -->
+          <div class="edu-tip">
+            <div class="edu-tip-icon">💡</div>
+            <div class="edu-tip-title">Did you know?</div>
+            <div class="edu-tip-text">Spreading your investments across different stocks and sectors reduces risk. If one company struggles, others may still perform well.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+  function toggleTheme() {
+    const t = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', t);
+    localStorage.setItem('ss-theme', t);
+  }
+  (function() {
+    const t = localStorage.getItem('ss-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+</body>
+</html>
