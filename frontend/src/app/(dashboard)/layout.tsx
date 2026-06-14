@@ -24,12 +24,12 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { isAuthenticated, init } = useAuthStore();
-  const { fetchStocks, fetchWatchlist } = useMarketStore();
-  const { fetchPortfolio, fetchTransactions } = usePortfolioStore();
+  const { fetchStocks, stocks } = useMarketStore();
+  const { syncPrices } = usePortfolioStore();
   const router = useRouter();
   const pathname = usePathname();
 
-  // Prevent redirect flash while token is being validated on first render
+  // Prevent redirect flash while persist rehydrates on first render
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
@@ -43,14 +43,16 @@ export default function DashboardLayout({
     }
   }, [isAuthenticated, initialized, pathname, router]);
 
-  // Load market and portfolio data once authenticated
+  // Load market data once authenticated
   useEffect(() => {
     if (!isAuthenticated) return;
     fetchStocks();
-    fetchWatchlist();
-    fetchPortfolio();
-    fetchTransactions();
   }, [isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Keep portfolio P&L current whenever prices refresh
+  useEffect(() => {
+    syncPrices(stocks);
+  }, [stocks]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const title =
     Object.entries(PAGE_TITLES).find(([path]) =>

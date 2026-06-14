@@ -71,7 +71,7 @@ export default function StockDetailPage({
 
   const handleTrade = async () => {
     setTradeMsg(null);
-    const result = await executeTrade(stock.ticker, quantity, tradeType);
+    const result = await executeTrade(stock.ticker, quantity, tradeType, stock.price);
     if (result.success) {
       setTradeMsg({ type: "success", text: `${tradeType === "buy" ? "Bought" : "Sold"} ${quantity} share${quantity > 1 ? "s" : ""} of ${stock.ticker}` });
       setQuantity(1);

@@ -1,10 +1,10 @@
 import { create } from "zustand";
-import type { Portfolio, Transaction } from "@/types";
+import { persist } from "zustand/middleware";
+import type { Portfolio, Transaction, Holding } from "@/types";
 import { STOCKS } from "@/lib/mock-data";
-import api from "@/lib/api";
 
 const EMPTY_PORTFOLIO: Portfolio = {
-  id: "",
+  id: "local",
   cashBalance: 100_000,
   totalValue: 100_000,
   totalCost: 0,
@@ -20,98 +20,191 @@ interface PortfolioState {
   portfolio: Portfolio;
   transactions: Transaction[];
   isLoading: boolean;
-  executeTrade: (ticker: string, shares: number, type: "buy" | "sell") => Promise<{ success: boolean; error?: string }>;
+  executeTrade: (
+    ticker: string,
+    shares: number,
+    type: "buy" | "sell",
+    price: number
+  ) => Promise<{ success: boolean; error?: string }>;
   fetchPortfolio: () => Promise<void>;
   fetchTransactions: () => Promise<void>;
+  syncPrices: (stocks: { ticker: string; price: number; name: string }[]) => void;
 }
 
 function nameFor(ticker: string) {
   return STOCKS.find((s) => s.ticker === ticker)?.name ?? ticker;
 }
 
-export const usePortfolioStore = create<PortfolioState>((set, get) => ({
-  portfolio: EMPTY_PORTFOLIO,
-  transactions: [],
-  isLoading: false,
+function recomputeTotals(portfolio: Portfolio): Portfolio {
+  const holdingsValue = portfolio.holdings.reduce((s, h) => s + h.totalValue, 0);
+  const totalCost = portfolio.holdings.reduce((s, h) => s + h.totalCost, 0);
+  const totalValue = portfolio.cashBalance + holdingsValue;
+  const unrealizedGain = holdingsValue - totalCost;
+  const unrealizedGainPct = totalCost > 0 ? (unrealizedGain / totalCost) * 100 : 0;
+  return { ...portfolio, totalValue, totalCost, unrealizedGain, unrealizedGainPct };
+}
 
-  fetchPortfolio: async () => {
-    try {
-      const res = await api.get("/portfolio");
-      const d = res.data.data;
-      const totalCost: number = d.holdings.reduce((s: number, h: { totalCost: number }) => s + h.totalCost, 0);
-      const portfolio: Portfolio = {
-        id: d.id,
-        cashBalance: Number(d.cashBalance),
-        totalValue: Number(d.totalValue),
-        totalCost,
-        unrealizedGain: Number(d.unrealizedGain),
-        unrealizedGainPct: totalCost > 0 ? (Number(d.unrealizedGain) / totalCost) * 100 : 0,
-        realizedGain: Number(d.realizedGain),
-        dailyChange: 0,
-        dailyChangePct: 0,
-        holdings: d.holdings.map((h: {
-          ticker: string; shares: number; avgCost: number; currentPrice: number;
-          totalValue: number; totalCost: number; unrealizedGain: number;
-          unrealizedGainPct: number; allocation: number;
-        }) => ({
-          ticker: h.ticker,
-          name: nameFor(h.ticker),
-          shares: Number(h.shares),
-          avgCost: Number(h.avgCost),
-          currentPrice: Number(h.currentPrice),
-          totalValue: Number(h.totalValue),
-          totalCost: Number(h.totalCost),
-          unrealizedGain: Number(h.unrealizedGain),
-          unrealizedGainPct: Number(h.unrealizedGainPct),
-          allocation: Number(h.allocation),
-        })),
-      };
-      set({ portfolio });
-    } catch {
-      // Keep current portfolio on failure
-    }
-  },
+export const usePortfolioStore = create<PortfolioState>()(
+  persist(
+    (set, get) => ({
+      portfolio: EMPTY_PORTFOLIO,
+      transactions: [],
+      isLoading: false,
 
-  fetchTransactions: async () => {
-    try {
-      const res = await api.get("/portfolio/transactions");
-      // Response shape: { success, data: { data: Transaction[], page, limit, total } }
-      const txList = res.data.data.data as {
-        id: string; type: string; ticker: string;
-        shares: number; price: number; total: number; executedAt: string;
-      }[];
-      const transactions: Transaction[] = txList.map((tx) => ({
-        id: tx.id,
-        type: tx.type.toLowerCase() as "buy" | "sell",
-        ticker: tx.ticker,
-        name: nameFor(tx.ticker),
-        shares: Number(tx.shares),
-        price: Number(tx.price),
-        total: Number(tx.total),
-        timestamp: tx.executedAt,
-      }));
-      set({ transactions });
-    } catch {
-      // Keep current transactions on failure
-    }
-  },
+      fetchPortfolio: async () => {
+        // no-op — portfolio lives in localStorage via persist
+      },
 
-  executeTrade: async (ticker, shares, type) => {
-    set({ isLoading: true });
-    try {
-      await api.post("/trading/trade", { ticker, shares, type });
-      await get().fetchPortfolio();
-      await get().fetchTransactions();
-      return { success: true };
-    } catch (err: unknown) {
-      const apiErr = err as { response?: { data?: { error?: { message?: string }; message?: string } } };
-      const message =
-        apiErr?.response?.data?.error?.message ??
-        apiErr?.response?.data?.message ??
-        "Trade failed";
-      return { success: false, error: message };
-    } finally {
-      set({ isLoading: false });
+      fetchTransactions: async () => {
+        // no-op — transactions live in localStorage via persist
+      },
+
+      syncPrices: (stocks) => {
+        const { portfolio } = get();
+        const holdings = portfolio.holdings.map((h) => {
+          const live = stocks.find((s) => s.ticker === h.ticker);
+          if (!live) return h;
+          const totalValue = live.price * h.shares;
+          const unrealizedGain = totalValue - h.totalCost;
+          const unrealizedGainPct = h.totalCost > 0 ? (unrealizedGain / h.totalCost) * 100 : 0;
+          return { ...h, currentPrice: live.price, totalValue, unrealizedGain, unrealizedGainPct };
+        });
+        set({ portfolio: recomputeTotals({ ...portfolio, holdings }) });
+      },
+
+      executeTrade: async (ticker, shares, type, price) => {
+        const { portfolio, transactions } = get();
+        set({ isLoading: true });
+
+        try {
+          if (type === "buy") {
+            const cost = price * shares;
+            if (portfolio.cashBalance < cost) {
+              return { success: false, error: "Insufficient cash" };
+            }
+
+            const existing = portfolio.holdings.find((h) => h.ticker === ticker);
+            let holdings: Holding[];
+
+            if (existing) {
+              const newShares = existing.shares + shares;
+              const newTotalCost = existing.totalCost + cost;
+              const newAvgCost = newTotalCost / newShares;
+              const totalValue = price * newShares;
+              const unrealizedGain = totalValue - newTotalCost;
+              const unrealizedGainPct = (unrealizedGain / newTotalCost) * 100;
+              holdings = portfolio.holdings.map((h) =>
+                h.ticker === ticker
+                  ? {
+                      ...h,
+                      shares: newShares,
+                      avgCost: newAvgCost,
+                      totalCost: newTotalCost,
+                      totalValue,
+                      unrealizedGain,
+                      unrealizedGainPct,
+                      currentPrice: price,
+                    }
+                  : h
+              );
+            } else {
+              const newHolding: Holding = {
+                ticker,
+                name: nameFor(ticker),
+                shares,
+                avgCost: price,
+                currentPrice: price,
+                totalValue: price * shares,
+                totalCost: cost,
+                unrealizedGain: 0,
+                unrealizedGainPct: 0,
+                allocation: 0,
+              };
+              holdings = [...portfolio.holdings, newHolding];
+            }
+
+            const newPortfolio = recomputeTotals({
+              ...portfolio,
+              cashBalance: portfolio.cashBalance - cost,
+              holdings,
+            });
+
+            const tx: Transaction = {
+              id: `tx-${Date.now()}`,
+              type: "buy",
+              ticker,
+              name: nameFor(ticker),
+              shares,
+              price,
+              total: cost,
+              timestamp: new Date().toISOString(),
+            };
+
+            set({ portfolio: newPortfolio, transactions: [tx, ...transactions] });
+            return { success: true };
+          } else {
+            const existing = portfolio.holdings.find((h) => h.ticker === ticker);
+            if (!existing || existing.shares < shares) {
+              return { success: false, error: "Insufficient shares" };
+            }
+
+            const proceeds = price * shares;
+            const costBasis = existing.avgCost * shares;
+            const realizedGain = proceeds - costBasis;
+
+            let holdings: Holding[];
+            if (existing.shares === shares) {
+              holdings = portfolio.holdings.filter((h) => h.ticker !== ticker);
+            } else {
+              const newShares = existing.shares - shares;
+              const newTotalCost = existing.totalCost - costBasis;
+              const totalValue = price * newShares;
+              const unrealizedGain = totalValue - newTotalCost;
+              const unrealizedGainPct = newTotalCost > 0 ? (unrealizedGain / newTotalCost) * 100 : 0;
+              holdings = portfolio.holdings.map((h) =>
+                h.ticker === ticker
+                  ? {
+                      ...h,
+                      shares: newShares,
+                      totalCost: newTotalCost,
+                      totalValue,
+                      unrealizedGain,
+                      unrealizedGainPct,
+                      currentPrice: price,
+                    }
+                  : h
+              );
+            }
+
+            const newPortfolio = recomputeTotals({
+              ...portfolio,
+              cashBalance: portfolio.cashBalance + proceeds,
+              realizedGain: portfolio.realizedGain + realizedGain,
+              holdings,
+            });
+
+            const tx: Transaction = {
+              id: `tx-${Date.now()}`,
+              type: "sell",
+              ticker,
+              name: nameFor(ticker),
+              shares,
+              price,
+              total: proceeds,
+              timestamp: new Date().toISOString(),
+            };
+
+            set({ portfolio: newPortfolio, transactions: [tx, ...transactions] });
+            return { success: true };
+          }
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+    }),
+    {
+      name: "stocksim-portfolio",
+      partialize: (state) => ({ portfolio: state.portfolio, transactions: state.transactions }),
     }
-  },
-}));
+  )
+);

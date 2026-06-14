@@ -1,0 +1,205 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e31] [cursor=pointer]:
+    - generic [ref=e34]:
+      - text: Compiling
+      - generic [ref=e35]:
+        - generic [ref=e36]: .
+        - generic [ref=e37]: .
+        - generic [ref=e38]: .
+  - alert [ref=e30]
+  - generic [ref=e39]:
+    - complementary [ref=e40]:
+      - generic [ref=e41]:
+        - generic [ref=e42]: S
+        - generic [ref=e43]: StockSim
+      - navigation [ref=e44]:
+        - paragraph [ref=e45]: Trading
+        - link "Dashboard" [ref=e46] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e47]
+          - text: Dashboard
+        - link "Markets" [ref=e52] [cursor=pointer]:
+          - /url: /markets
+          - img [ref=e53]
+          - text: Markets
+        - link "Portfolio" [ref=e56] [cursor=pointer]:
+          - /url: /portfolio
+          - img [ref=e57]
+          - text: Portfolio
+        - link "Watchlist" [ref=e61] [cursor=pointer]:
+          - /url: /watchlist
+          - img [ref=e62]
+          - text: Watchlist
+        - paragraph [ref=e64]: Learn
+        - link "Learn" [ref=e65] [cursor=pointer]:
+          - /url: /learn
+          - img [ref=e66]
+          - text: Learn
+        - link "Achievements" [ref=e68] [cursor=pointer]:
+          - /url: /achievements
+          - img [ref=e69]
+          - text: Achievements
+        - link "Leaderboard" [ref=e75] [cursor=pointer]:
+          - /url: /leaderboards
+          - img [ref=e76]
+          - text: Leaderboard
+      - generic [ref=e81]:
+        - paragraph [ref=e82]: Cash Balance
+        - paragraph [ref=e83]: $100,000.00
+      - generic [ref=e84]:
+        - generic [ref=e85] [cursor=pointer]:
+          - generic [ref=e86]: T
+          - generic [ref=e87]:
+            - paragraph [ref=e88]: test
+            - generic [ref=e91]: Lv 1
+          - button "Log out" [ref=e92]:
+            - img [ref=e93]
+        - link "Settings" [ref=e96] [cursor=pointer]:
+          - /url: /settings
+          - img [ref=e97]
+          - text: Settings
+    - generic [ref=e100]:
+      - banner [ref=e101]:
+        - heading "Dashboard" [level=1] [ref=e102]
+        - generic [ref=e104]:
+          - img [ref=e105]
+          - textbox "Search ticker or company…" [ref=e108]
+          - generic [ref=e109]: ⌘K
+        - generic [ref=e110]:
+          - button [ref=e111]:
+            - img [ref=e112]
+          - button "Toggle theme" [ref=e116]:
+            - img [ref=e117]
+      - main [ref=e123]:
+        - generic [ref=e124]:
+          - generic [ref=e125]:
+            - generic [ref=e126]:
+              - paragraph [ref=e127]: Portfolio Value
+              - paragraph [ref=e128]: $100,000.00
+              - paragraph [ref=e129]: +$0.00 today
+            - generic [ref=e130]:
+              - paragraph [ref=e131]: Total Return
+              - paragraph [ref=e132]: +0.00%
+              - paragraph [ref=e133]: +$0.00
+            - generic [ref=e134]:
+              - paragraph [ref=e135]: Cash Balance
+              - paragraph [ref=e136]: $100,000.00
+              - paragraph [ref=e137]: 100.0% of portfolio
+            - generic [ref=e138]:
+              - paragraph [ref=e139]: Realized Gains
+              - paragraph [ref=e140]: $0.00
+          - generic [ref=e141]:
+            - generic [ref=e142]:
+              - generic [ref=e144]:
+                - paragraph [ref=e145]: Portfolio Performance
+                - paragraph [ref=e146]: $100,000.00
+                - paragraph [ref=e147]: +$0.00 (+0.00%) today
+              - generic [ref=e149]:
+                - generic:
+                  - status:
+                    - paragraph: "6"
+                    - list:
+                      - listitem: ": $110.00"
+                - application [ref=e150]
+            - generic [ref=e161]:
+              - generic [ref=e162]:
+                - generic [ref=e163]:
+                  - img [ref=e164]
+                  - paragraph [ref=e166]: Level 1
+                - paragraph [ref=e167]: 0 XP
+                - paragraph [ref=e169]: 500 XP to Level 2
+              - generic [ref=e170]:
+                - generic [ref=e171]:
+                  - img [ref=e172]
+                  - paragraph [ref=e174]: Daily Streak
+                - paragraph [ref=e175]: "0"
+                - paragraph [ref=e176]: days in a row
+          - generic [ref=e177]:
+            - paragraph [ref=e178]: Market Overview
+            - generic [ref=e179]:
+              - generic [ref=e180]:
+                - paragraph [ref=e181]: S&P 500
+                - paragraph [ref=e182]: 5,248.49
+                - paragraph [ref=e183]: +0.44%
+              - generic [ref=e184]:
+                - paragraph [ref=e185]: NASDAQ
+                - paragraph [ref=e186]: 16,742.39
+                - paragraph [ref=e187]: "-0.25%"
+              - generic [ref=e188]:
+                - paragraph [ref=e189]: DOW
+                - paragraph [ref=e190]: 39,103.44
+                - paragraph [ref=e191]: +0.34%
+              - generic [ref=e192]:
+                - paragraph [ref=e193]: Russell 2000
+                - paragraph [ref=e194]: 2,067.37
+                - paragraph [ref=e195]: "-0.39%"
+          - generic [ref=e196]:
+            - generic [ref=e197]:
+              - generic [ref=e198]:
+                - paragraph [ref=e199]: Top Holdings
+                - link "View all" [ref=e200] [cursor=pointer]:
+                  - /url: /portfolio
+                  - text: View all
+                  - img [ref=e201]
+              - paragraph [ref=e203]: Start building your portfolio by purchasing your first stock.
+            - generic [ref=e204]:
+              - generic [ref=e205]:
+                - paragraph [ref=e206]: Market Movers
+                - link "Markets" [ref=e207] [cursor=pointer]:
+                  - /url: /markets
+                  - text: Markets
+                  - img [ref=e208]
+              - generic [ref=e210]:
+                - link "JPM JPMorgan Chase +2.31%" [ref=e211] [cursor=pointer]:
+                  - /url: /stock/JPM
+                  - img [ref=e212]
+                  - generic [ref=e215]:
+                    - paragraph [ref=e216]: JPM
+                    - paragraph [ref=e217]: JPMorgan Chase
+                  - generic [ref=e218]: +2.31%
+                - link "TSLA Tesla Inc. +1.83%" [ref=e219] [cursor=pointer]:
+                  - /url: /stock/TSLA
+                  - img [ref=e220]
+                  - generic [ref=e223]:
+                    - paragraph [ref=e224]: TSLA
+                    - paragraph [ref=e225]: Tesla Inc.
+                  - generic [ref=e226]: +1.83%
+                - link "JNJ Johnson & Johnson +1.07%" [ref=e227] [cursor=pointer]:
+                  - /url: /stock/JNJ
+                  - img [ref=e228]
+                  - generic [ref=e231]:
+                    - paragraph [ref=e232]: JNJ
+                    - paragraph [ref=e233]: Johnson & Johnson
+                  - generic [ref=e234]: +1.07%
+                - link "AAPL Apple Inc. -1.52%" [ref=e236] [cursor=pointer]:
+                  - /url: /stock/AAPL
+                  - img [ref=e237]
+                  - generic [ref=e240]:
+                    - paragraph [ref=e241]: AAPL
+                    - paragraph [ref=e242]: Apple Inc.
+                  - generic [ref=e243]: "-1.52%"
+                - link "AMZN Amazon.com Inc. -1.22%" [ref=e244] [cursor=pointer]:
+                  - /url: /stock/AMZN
+                  - img [ref=e245]
+                  - generic [ref=e248]:
+                    - paragraph [ref=e249]: AMZN
+                    - paragraph [ref=e250]: Amazon.com Inc.
+                  - generic [ref=e251]: "-1.22%"
+                - link "META Meta Platforms Inc. -0.25%" [ref=e252] [cursor=pointer]:
+                  - /url: /stock/META
+                  - img [ref=e253]
+                  - generic [ref=e256]:
+                    - paragraph [ref=e257]: META
+                    - paragraph [ref=e258]: Meta Platforms Inc.
+                  - generic [ref=e259]: "-0.25%"
+          - generic [ref=e260]:
+            - paragraph [ref=e262]: Recent Transactions
+            - table [ref=e264]:
+              - rowgroup [ref=e265]:
+                - row "Type Stock Shares Price Total" [ref=e266]:
+                  - columnheader "Type" [ref=e267]
+                  - columnheader "Stock" [ref=e268]
+                  - columnheader "Shares" [ref=e269]
+                  - columnheader "Price" [ref=e270]
+                  - columnheader "Total" [ref=e271]
+              - rowgroup
