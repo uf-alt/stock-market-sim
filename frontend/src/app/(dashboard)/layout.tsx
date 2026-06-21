@@ -18,6 +18,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/leaderboards": "Leaderboard",
   "/settings": "Settings",
   "/backtesting": "Backtest",
+  "/class": "Class",
 };
 
 export default function DashboardLayout({

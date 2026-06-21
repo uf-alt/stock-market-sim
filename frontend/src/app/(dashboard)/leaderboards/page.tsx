@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { GraduationCap } from "lucide-react";
 import { usePortfolioStore } from "@/stores/portfolio.store";
 import { useAuthStore } from "@/stores/auth.store";
 import { formatCurrency, formatPercent } from "@/utils/format";
@@ -21,6 +23,7 @@ const MOCK_TRADERS = [
 const RANK_LABEL = ["1st", "2nd", "3rd"];
 
 export default function LeaderboardsPage() {
+  const [tab, setTab] = useState<"global" | "class">("global");
   const { portfolio, transactions } = usePortfolioStore();
   const { user } = useAuthStore();
 
@@ -45,6 +48,41 @@ export default function LeaderboardsPage() {
 
   return (
     <div className="space-y-5">
+      {/* Tab switcher */}
+      <div className="flex rounded-md bg-secondary p-0.5 gap-0.5 w-fit">
+        {(["global", "class"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={cn(
+              "px-4 py-1.5 rounded text-[12px] font-semibold capitalize transition-colors",
+              tab === t
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            {t === "global" ? "Global" : "Class"}
+          </button>
+        ))}
+      </div>
+
+      {/* Class placeholder */}
+      {tab === "class" && (
+        <div className="bg-card border border-border rounded-xl p-12 flex flex-col items-center text-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
+            <GraduationCap size={22} className="text-muted-foreground" />
+          </div>
+          <div>
+            <p className="text-[14px] font-semibold text-foreground mb-1">No class joined yet</p>
+            <p className="text-[13px] text-muted-foreground">
+              Ask your instructor for a class code, then join under the{" "}
+              <span className="text-foreground font-medium">Class</span> tab in the sidebar.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {tab === "global" && <>
       {/* Your rank summary */}
       <div className="bg-card border border-border rounded-xl px-5 py-4 flex items-center gap-4">
         <div className="w-10 h-10 rounded-md bg-primary flex items-center justify-center font-bold text-primary-foreground font-mono text-sm flex-shrink-0">
@@ -153,6 +191,7 @@ export default function LeaderboardsPage() {
           </tbody>
         </table>
       </div>
+      </>}
     </div>
   );
 }

@@ -11,6 +11,7 @@ import {
   BookOpen,
   Trophy,
   Users,
+  GraduationCap,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -31,6 +32,7 @@ const LEARN_ITEMS = [
   { href: "/learn", label: "Learn", icon: BookOpen },
   { href: "/achievements", label: "Achievements", icon: Trophy },
   { href: "/leaderboards", label: "Leaderboard", icon: Users },
+  { href: "/class", label: "Class", icon: GraduationCap },
 ];
 
 export function Sidebar() {
