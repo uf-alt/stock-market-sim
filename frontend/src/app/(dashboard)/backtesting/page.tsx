@@ -29,6 +29,13 @@ const PERIODS = [
   { label: "5Y", days: 1825 },
 ];
 
+const TODAY = new Date().toISOString().split("T")[0];
+const ONE_YEAR_AGO = (() => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - 1);
+  return d.toISOString().split("T")[0];
+})();
+
 const STRATEGIES: { value: Strategy; label: string }[] = [
   { value: "buy-hold", label: "Buy & Hold" },
   { value: "sma-crossover", label: "SMA Crossover" },
@@ -47,6 +54,9 @@ export default function BacktestingPage() {
   // Config
   const [ticker, setTicker] = useState("AAPL");
   const [days, setDays] = useState(365);
+  const [dateMode, setDateMode] = useState<"preset" | "custom">("preset");
+  const [startDate, setStartDate] = useState(ONE_YEAR_AGO);
+  const [endDate, setEndDate] = useState(TODAY);
   const [strategy, setStrategy] = useState<Strategy>("sma-crossover");
   const [capital, setCapital] = useState(10000);
   const [smaFast, setSmaFast] = useState(10);
@@ -57,13 +67,21 @@ export default function BacktestingPage() {
 
   const [result, setResult] = useState<BacktestResult | null>(null);
 
-  // Price history — stable per ticker + days (only regenerates when either changes)
+  const effectiveDays = useMemo(() => {
+    if (dateMode === "custom") {
+      const diff = new Date(endDate).getTime() - new Date(startDate).getTime();
+      return Math.max(7, Math.floor(diff / (1000 * 60 * 60 * 24)));
+    }
+    return days;
+  }, [dateMode, days, startDate, endDate]);
+
+  // Price history — stable per ticker + effectiveDays (only regenerates when either changes)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const priceHistory = useMemo(() => {
     const price = stocks.find((s) => s.ticker === ticker)?.price ?? 100;
-    return generatePriceHistory(price, days);
+    return generatePriceHistory(price, effectiveDays);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ticker, days]);
+  }, [ticker, effectiveDays]);
 
   const handleRun = () => {
     const config: BacktestConfig = {
@@ -163,9 +181,9 @@ export default function BacktestingPage() {
               {PERIODS.map((p) => (
                 <button
                   key={p.label}
-                  onClick={() => setDays(p.days)}
+                  onClick={() => { setDays(p.days); setDateMode("preset"); }}
                   className={`flex-1 py-1.5 rounded text-[11px] font-semibold transition-colors ${
-                    days === p.days
+                    dateMode === "preset" && days === p.days
                       ? "bg-card text-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
@@ -173,7 +191,37 @@ export default function BacktestingPage() {
                   {p.label}
                 </button>
               ))}
+              <button
+                onClick={() => setDateMode("custom")}
+                className={`flex-1 py-1.5 rounded text-[11px] font-semibold transition-colors ${
+                  dateMode === "custom"
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Custom
+              </button>
             </div>
+            {dateMode === "custom" && (
+              <div className="flex gap-2 mt-2">
+                <input
+                  type="date"
+                  value={startDate}
+                  max={endDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="flex-1 bg-background border border-border rounded-md px-2 py-1.5 text-[12px] text-foreground font-mono outline-none focus:border-primary transition-colors"
+                />
+                <span className="text-muted-foreground self-center text-[12px]">→</span>
+                <input
+                  type="date"
+                  value={endDate}
+                  min={startDate}
+                  max={TODAY}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="flex-1 bg-background border border-border rounded-md px-2 py-1.5 text-[12px] text-foreground font-mono outline-none focus:border-primary transition-colors"
+                />
+              </div>
+            )}
           </div>
 
           <div>

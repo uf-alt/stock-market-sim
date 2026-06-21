@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
+import { Tutorial } from "@/components/Tutorial";
 import { useAuthStore } from "@/stores/auth.store";
 import { useMarketStore } from "@/stores/market.store";
 import { usePortfolioStore } from "@/stores/portfolio.store";
@@ -64,5 +65,10 @@ export default function DashboardLayout({
 
   if (!initialized || !isAuthenticated) return null;
 
-  return <AppShell title={title}>{children}</AppShell>;
+  return (
+    <>
+      <Tutorial />
+      <AppShell title={title}>{children}</AppShell>
+    </>
+  );
 }
