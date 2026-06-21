@@ -97,15 +97,12 @@ export default function StockDetailPage({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-card border border-border flex items-center justify-center text-[14px] font-black text-muted-foreground flex-shrink-0">
+          <div className="w-12 h-12 rounded-lg bg-card border border-border flex items-center justify-center text-[13px] font-black text-muted-foreground flex-shrink-0">
             {stock.ticker.slice(0, 2)}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2
-                className="text-3xl font-black"
-                style={{ fontFamily: "var(--font-playfair)" }}
-              >
+              <h2 className="text-3xl font-bold font-mono tracking-tight">
                 {stock.ticker}
               </h2>
               <button
@@ -122,10 +119,7 @@ export default function StockDetailPage({
           </div>
         </div>
         <div className="text-right">
-          <p
-            className="text-4xl font-black tracking-tight"
-            style={{ fontFamily: "var(--font-playfair)" }}
-          >
+          <p className="text-4xl font-bold tracking-tight font-mono">
             {formatCurrency(stock.price)}
           </p>
           <p className={`text-[15px] font-semibold mt-0.5 ${stock.changePct >= 0 ? "text-gain" : "text-loss"}`}>
@@ -138,7 +132,7 @@ export default function StockDetailPage({
         {/* Chart + metrics */}
         <div className="lg:col-span-2 space-y-5">
           {/* Chart */}
-          <div className="bg-card border border-border rounded-2xl p-5">
+          <div className="bg-card border border-border rounded-xl p-5">
             <div className="flex gap-1 mb-5">
               {TIMEFRAMES.map((tf) => (
                 <button
@@ -213,7 +207,7 @@ export default function StockDetailPage({
               ["52W Low", formatCurrency(stock.low52)],
               ["Sector", stock.sector],
             ].map(([label, value]) => (
-              <div key={label} className="bg-card border border-border rounded-xl px-4 py-3">
+              <div key={label} className="bg-card border border-border rounded-lg px-4 py-3">
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground/70 mb-1">
                   {label}
                 </p>
@@ -223,8 +217,8 @@ export default function StockDetailPage({
           </div>
 
           {/* About */}
-          <div className="bg-card border border-border rounded-2xl p-5">
-            <p className="text-[12px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">
+          <div className="bg-card border border-border rounded-xl p-5">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">
               About
             </p>
             <p className="text-[13px] text-muted-foreground leading-relaxed">
@@ -236,8 +230,8 @@ export default function StockDetailPage({
         {/* Trading panel */}
         <div className="space-y-4">
           {holding && (
-            <div className="bg-card border border-border rounded-2xl p-5">
-              <p className="text-[12px] uppercase tracking-wider text-muted-foreground font-semibold mb-3">
+            <div className="bg-card border border-border rounded-xl p-5">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-3">
                 Your Position
               </p>
               <div className="space-y-1.5">
@@ -266,18 +260,18 @@ export default function StockDetailPage({
             </div>
           )}
 
-          <div className="bg-card border border-border rounded-2xl p-5">
-            <p className="text-[12px] uppercase tracking-wider text-muted-foreground font-semibold mb-4">
+          <div className="bg-card border border-border rounded-xl p-5">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-4">
               Trade {stock.ticker}
             </p>
 
             {/* Buy/Sell toggle */}
-            <div className="flex rounded-lg bg-secondary p-1 mb-4">
+            <div className="flex rounded-md bg-secondary p-1 mb-4">
               {(["buy", "sell"] as const).map((t) => (
                 <button
                   key={t}
                   onClick={() => setTradeType(t)}
-                  className={`flex-1 py-1.5 rounded-md text-[13px] font-semibold capitalize transition-colors ${
+                  className={`flex-1 py-1.5 rounded text-[12px] font-semibold capitalize transition-colors ${
                     tradeType === t
                       ? t === "buy"
                         ? "bg-gain text-white"
@@ -372,7 +366,7 @@ export default function StockDetailPage({
             <button
               onClick={handleTrade}
               disabled={isLoading || (tradeType === "buy" ? !canBuy : !canSell)}
-              className={`w-full py-3 rounded-xl font-bold text-[14px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-white ${
+              className={`w-full py-2.5 rounded-lg font-semibold text-[13px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-white ${
                 tradeType === "buy"
                   ? "bg-gain hover:bg-gain/90"
                   : "bg-loss hover:bg-loss/90"

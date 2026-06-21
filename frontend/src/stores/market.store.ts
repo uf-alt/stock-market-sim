@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { supabase } from "@/lib/supabase";
 import type { Stock } from "@/types";
 import { STOCKS } from "@/lib/mock-data";
 
@@ -17,6 +18,11 @@ interface MarketState {
   fetchWatchlist: () => Promise<void>;
 }
 
+async function getUserId(): Promise<string | null> {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.user.id ?? null;
+}
+
 export const useMarketStore = create<MarketState>()(
   persist(
     (set, get) => ({
@@ -30,10 +36,21 @@ export const useMarketStore = create<MarketState>()(
 
       toggleWatchlist: (ticker) => {
         const { watchlist } = get();
+        const isWatched = watchlist.includes(ticker);
         set({
-          watchlist: watchlist.includes(ticker)
+          watchlist: isWatched
             ? watchlist.filter((t) => t !== ticker)
             : [...watchlist, ticker],
+        });
+
+        // Sync to Supabase in background
+        getUserId().then(async (uid) => {
+          if (!uid) return;
+          if (isWatched) {
+            await supabase.from("watchlist").delete().eq("user_id", uid).eq("ticker", ticker);
+          } else {
+            await supabase.from("watchlist").insert({ user_id: uid, ticker });
+          }
         });
       },
 
@@ -71,7 +88,17 @@ export const useMarketStore = create<MarketState>()(
       },
 
       fetchWatchlist: async () => {
-        // no-op — watchlist lives in localStorage via persist
+        const uid = await getUserId();
+        if (!uid) return;
+
+        const { data } = await supabase
+          .from("watchlist")
+          .select("ticker")
+          .eq("user_id", uid);
+
+        if (data) {
+          set({ watchlist: data.map((r) => r.ticker) });
+        }
       },
     }),
     {

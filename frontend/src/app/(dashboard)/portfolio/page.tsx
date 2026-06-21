@@ -31,13 +31,12 @@ export default function PortfolioPage() {
           { label: "Realized Gains", value: formatChange(portfolio.realizedGain), sub: "closed positions", pos: portfolio.realizedGain >= 0 },
           { label: "Cash Balance", value: formatCurrency(portfolio.cashBalance), sub: `${((portfolio.cashBalance / portfolio.totalValue) * 100).toFixed(1)}% of portfolio`, pos: undefined },
         ].map(({ label, value, sub, pos }) => (
-          <div key={label} className="bg-card border border-border rounded-2xl p-5">
+          <div key={label} className="bg-card border border-border rounded-xl p-4">
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">{label}</p>
             <p
-              className={`text-2xl font-black tracking-tight ${
+              className={`text-2xl font-bold tracking-tight font-mono ${
                 pos === undefined ? "text-foreground" : pos ? "text-gain" : "text-loss"
               }`}
-              style={{ fontFamily: "var(--font-playfair)" }}
             >
               {value}
             </p>
@@ -86,7 +85,7 @@ export default function PortfolioPage() {
                     <tr key={h.ticker} className="group hover:bg-primary/5 transition-colors">
                       <td className={`py-3 px-4 ${i > 0 ? "border-t border-border" : ""}`}>
                         <div className="flex items-center gap-2.5">
-                          <span className="w-8 h-8 rounded-lg bg-secondary border border-border flex items-center justify-center text-[9px] font-black text-muted-foreground flex-shrink-0">
+                          <span className="w-8 h-8 rounded-md bg-secondary border border-border flex items-center justify-center text-[9px] font-black text-muted-foreground flex-shrink-0">
                             {h.ticker.slice(0, 2)}
                           </span>
                           <div>
@@ -136,8 +135,8 @@ export default function PortfolioPage() {
 
         {/* Allocation chart */}
         <div className="space-y-4">
-          <div className="bg-card border border-border rounded-2xl p-5">
-            <p className="text-[11px] uppercase tracking-widest text-muted-foreground mb-4">
+          <div className="bg-card border border-border rounded-xl p-5">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-4">
               Allocation
             </p>
             {pieData.length > 0 ? (

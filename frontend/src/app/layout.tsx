@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist_Mono, DM_Sans, Playfair_Display } from "next/font/google";
+import { Geist_Mono, DM_Sans } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { Providers } from "@/components/providers/Providers";
@@ -8,12 +8,6 @@ const dmSans = DM_Sans({
   variable: "--font-dm-sans",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-});
-
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
-  subsets: ["latin"],
-  weight: ["700", "800"],
 });
 
 const geistMono = Geist_Mono({
@@ -36,7 +30,7 @@ export default function RootLayout({
     <html lang="en" className="dark h-full" suppressHydrationWarning>
       <head />
       <body
-        className={`${dmSans.variable} ${playfair.variable} ${geistMono.variable} h-full antialiased`}
+        className={`${dmSans.variable} ${geistMono.variable} h-full antialiased`}
       >
         <Script
           id="theme-init"

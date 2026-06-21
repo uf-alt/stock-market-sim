@@ -41,8 +41,8 @@ export function TopNavbar({ title }: TopNavbarProps) {
   };
 
   return (
-    <header className="h-[60px] bg-card border-b border-border flex items-center px-6 gap-3.5 flex-shrink-0 relative z-10">
-      <h1 className="text-[17px] font-bold text-foreground">{title}</h1>
+    <header className="h-[52px] bg-card border-b border-border flex items-center px-6 gap-3.5 flex-shrink-0 relative z-10">
+      <h1 className="text-[13px] font-semibold text-muted-foreground tracking-wide">{title}</h1>
 
       {/* Search */}
       <div className="relative flex-1 max-w-[400px] ml-auto">
@@ -62,14 +62,14 @@ export function TopNavbar({ title }: TopNavbarProps) {
         </div>
 
         {suggestions.length > 0 && (
-          <div className="absolute top-full mt-1 left-0 right-0 bg-popover border border-border rounded-xl shadow-xl overflow-hidden z-50">
+          <div className="absolute top-full mt-1 left-0 right-0 bg-popover border border-border rounded-lg shadow-xl overflow-hidden z-50">
             {suggestions.map((s) => (
               <button
                 key={s.ticker}
                 onMouseDown={() => navigate(s.ticker)}
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-secondary transition-colors text-left"
               >
-                <span className="w-9 h-9 rounded-lg bg-secondary border border-border flex items-center justify-center text-[10px] font-black text-muted-foreground flex-shrink-0">
+                <span className="w-9 h-9 rounded-md bg-secondary border border-border flex items-center justify-center text-[10px] font-black text-muted-foreground flex-shrink-0">
                   {s.ticker.slice(0, 2)}
                 </span>
                 <div>

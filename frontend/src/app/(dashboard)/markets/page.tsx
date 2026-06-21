@@ -61,12 +61,12 @@ export default function MarketsPage() {
         {MARKET_INDICES.map((idx) => (
           <div
             key={idx.symbol}
-            className="bg-card border border-border rounded-xl px-4 py-3 flex-shrink-0 min-w-[150px]"
+            className="bg-card border border-border rounded-lg px-4 py-3 flex-shrink-0 min-w-[145px]"
           >
             <p className="text-[10px] uppercase tracking-wide text-muted-foreground/70 mb-1">
               {idx.name}
             </p>
-            <p className="text-xl font-black tracking-tight" style={{ fontFamily: "var(--font-playfair)" }}>
+            <p className="text-lg font-bold tracking-tight font-mono">
               {idx.value.toLocaleString()}
             </p>
             <p className={`text-[11px] font-semibold mt-0.5 ${idx.changePct >= 0 ? "text-gain" : "text-loss"}`}>
@@ -90,10 +90,10 @@ export default function MarketsPage() {
             <button
               key={s}
               onClick={() => setSelectedSector(s)}
-              className={`px-3.5 py-1.5 rounded-full text-[12px] font-semibold transition-all border ${
+              className={`px-3 py-1 rounded-md text-[11px] font-semibold transition-all border ${
                 selectedSector === s
-                  ? "bg-primary/15 border-primary text-primary"
-                  : "bg-card border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                  ? "bg-primary/10 border-primary/50 text-primary"
+                  : "bg-transparent border-border text-muted-foreground hover:border-muted-foreground/40 hover:text-foreground"
               }`}
             >
               {s}
@@ -159,7 +159,7 @@ function StockRow({
     <tr className="group hover:bg-primary/5 transition-colors cursor-pointer">
       <td className={`px-4 py-4 ${!isFirst ? "border-t border-border" : ""}`}>
         <div className="flex items-center gap-3">
-          <span className="w-9 h-9 rounded-xl bg-secondary border border-border flex items-center justify-center text-[10px] font-black text-muted-foreground flex-shrink-0">
+          <span className="w-9 h-9 rounded-md bg-secondary border border-border flex items-center justify-center text-[10px] font-black text-muted-foreground flex-shrink-0">
             {stock.ticker.slice(0, 2)}
           </span>
           <div>

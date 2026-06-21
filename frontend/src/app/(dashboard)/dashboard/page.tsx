@@ -36,11 +36,11 @@ function StatCard({
   positive?: boolean;
 }) {
   return (
-    <div className="bg-card border border-border rounded-2xl p-5">
-      <p className="text-[11px] uppercase tracking-widest text-muted-foreground mb-2">
+    <div className="bg-card border border-border rounded-xl p-4">
+      <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
         {label}
       </p>
-      <p className="text-2xl font-black tracking-tight" style={{ fontFamily: "var(--font-playfair)" }}>
+      <p className="text-2xl font-bold tracking-tight font-mono">
         {value}
       </p>
       {sub && (
@@ -106,16 +106,13 @@ export default function DashboardPage() {
       {/* Row 2 — Chart + XP */}
       <div className="grid md:grid-cols-3 gap-4">
         {/* Sparkline */}
-        <div className="md:col-span-2 bg-card border border-border rounded-2xl p-5">
+        <div className="md:col-span-2 bg-card border border-border rounded-xl p-5">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
                 Portfolio Performance
               </p>
-              <p
-                className="text-3xl font-black mt-1 tracking-tight"
-                style={{ fontFamily: "var(--font-playfair)" }}
-              >
+              <p className="text-3xl font-bold mt-1 tracking-tight font-mono">
                 {formatCurrency(portfolio.totalValue)}
               </p>
               <p className="text-[13px] font-semibold text-gain mt-0.5">
@@ -156,43 +153,34 @@ export default function DashboardPage() {
 
         {/* XP + Streak */}
         <div className="flex flex-col gap-4">
-          <div className="bg-card border border-border rounded-2xl p-5 flex-1">
+          <div className="bg-card border border-border rounded-xl p-5 flex-1">
             <div className="flex items-center gap-2 mb-3">
-              <Zap size={16} className="text-amber-400" />
-              <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+              <Zap size={15} className="text-amber-400" />
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
                 Level {user?.level}
               </p>
             </div>
-            <p
-              className="text-3xl font-black tracking-tight mb-3"
-              style={{ fontFamily: "var(--font-playfair)" }}
-            >
+            <p className="text-3xl font-bold tracking-tight mb-3 font-mono">
               {user?.xp.toLocaleString()} XP
             </p>
             <div className="h-2 bg-secondary rounded-full overflow-hidden">
               <div
-                className="h-full rounded-full transition-all"
-                style={{
-                  width: `${xpPct}%`,
-                  background: "linear-gradient(90deg, #a8521a, #e07830)",
-                }}
+                className="h-full rounded-full bg-primary transition-all"
+                style={{ width: `${xpPct}%` }}
               />
             </div>
             <p className="text-[11px] text-muted-foreground mt-1.5">
               {user?.xpToNext ? user.xpToNext - user.xp : 0} XP to Level {(user?.level ?? 1) + 1}
             </p>
           </div>
-          <div className="bg-card border border-border rounded-2xl p-5">
+          <div className="bg-card border border-border rounded-xl p-5">
             <div className="flex items-center gap-2 mb-2">
-              <Flame size={16} className="text-primary" />
-              <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+              <Flame size={15} className="text-primary" />
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
                 Daily Streak
               </p>
             </div>
-            <p
-              className="text-3xl font-black tracking-tight"
-              style={{ fontFamily: "var(--font-playfair)" }}
-            >
+            <p className="text-3xl font-bold tracking-tight font-mono">
               {user?.streak ?? 0}
             </p>
             <p className="text-[12px] text-muted-foreground mt-0.5">days in a row</p>
@@ -209,15 +197,12 @@ export default function DashboardPage() {
           {MARKET_INDICES.map((idx) => (
             <div
               key={idx.symbol}
-              className="bg-card border border-border rounded-xl px-4 py-3 flex-shrink-0 min-w-[160px]"
+              className="bg-card border border-border rounded-lg px-4 py-3 flex-shrink-0 min-w-[150px]"
             >
               <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
                 {idx.name}
               </p>
-              <p
-                className="text-xl font-black tracking-tight"
-                style={{ fontFamily: "var(--font-playfair)" }}
-              >
+              <p className="text-lg font-bold tracking-tight font-mono">
                 {idx.value.toLocaleString()}
               </p>
               <p
@@ -259,7 +244,7 @@ export default function DashboardPage() {
                   href={`/stock/${h.ticker}`}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/5 transition-colors"
                 >
-                  <span className="w-8 h-8 rounded-lg bg-secondary border border-border flex items-center justify-center text-[9px] font-black text-muted-foreground flex-shrink-0">
+                  <span className="w-8 h-8 rounded-md bg-secondary border border-border flex items-center justify-center text-[9px] font-black text-muted-foreground flex-shrink-0">
                     {h.ticker.slice(0, 2)}
                   </span>
                   <div className="flex-1 min-w-0">

@@ -7,6 +7,7 @@ import {
   TrendingUp,
   BriefcaseBusiness,
   Bookmark,
+  Activity,
   BookOpen,
   Trophy,
   Users,
@@ -23,6 +24,7 @@ const NAV_ITEMS = [
   { href: "/markets", label: "Markets", icon: TrendingUp },
   { href: "/portfolio", label: "Portfolio", icon: BriefcaseBusiness },
   { href: "/watchlist", label: "Watchlist", icon: Bookmark },
+  { href: "/backtesting", label: "Backtest", icon: Activity },
 ];
 
 const LEARN_ITEMS = [
@@ -41,14 +43,11 @@ export function Sidebar() {
   return (
     <aside className="w-[220px] h-screen bg-card border-r border-border flex flex-col flex-shrink-0">
       {/* Logo */}
-      <div className="flex items-center gap-2.5 px-[18px] py-5 border-b border-border">
-        <span
-          className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-[15px] text-white flex-shrink-0"
-          style={{ background: "linear-gradient(135deg, #a8521a, #e07830)" }}
-        >
+      <div className="flex items-center gap-2.5 px-[18px] py-[18px] border-b border-border">
+        <span className="w-7 h-7 rounded-md border border-primary/40 flex items-center justify-center font-black text-[13px] text-primary flex-shrink-0">
           S
         </span>
-        <span className="font-bold text-[17px] text-foreground">StockSim</span>
+        <span className="font-semibold text-[15px] tracking-tight text-foreground">StockSim</span>
       </div>
 
       {/* Nav */}
@@ -61,10 +60,10 @@ export function Sidebar() {
             key={href}
             href={href}
             className={cn(
-              "flex items-center gap-2.5 px-3 py-[9px] rounded-lg text-[13.5px] font-medium transition-colors",
+              "flex items-center gap-2.5 px-3 py-[8px] rounded-md text-[13px] font-medium transition-colors",
               pathname === href
-                ? "bg-primary/15 text-primary"
-                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                ? "bg-secondary text-foreground"
+                : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
             )}
           >
             <Icon size={16} />
@@ -80,10 +79,10 @@ export function Sidebar() {
             key={href}
             href={href}
             className={cn(
-              "flex items-center gap-2.5 px-3 py-[9px] rounded-lg text-[13.5px] font-medium transition-colors",
+              "flex items-center gap-2.5 px-3 py-[8px] rounded-md text-[13px] font-medium transition-colors",
               pathname === href
-                ? "bg-primary/15 text-primary"
-                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                ? "bg-secondary text-foreground"
+                : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
             )}
           >
             <Icon size={16} />
@@ -93,11 +92,11 @@ export function Sidebar() {
       </nav>
 
       {/* Balance chip */}
-      <div className="mx-3 mb-3 px-3 py-2.5 rounded-lg bg-secondary border border-border">
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">
-          Cash Balance
+      <div className="mx-3 mb-3 px-3 py-2.5 rounded-md border border-border">
+        <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-0.5">
+          Cash
         </p>
-        <p className="text-sm font-bold text-foreground">
+        <p className="text-sm font-bold text-foreground font-mono">
           {formatCurrency(portfolio.cashBalance)}
         </p>
       </div>
@@ -105,10 +104,7 @@ export function Sidebar() {
       {/* User footer */}
       <div className="p-3.5 border-t border-border">
         <div className="flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg hover:bg-secondary transition-colors cursor-pointer group">
-          <div
-            className="w-[34px] h-[34px] rounded-full flex items-center justify-center font-bold text-[13px] text-white flex-shrink-0"
-            style={{ background: "linear-gradient(135deg, #a8521a, #e07830)" }}
-          >
+          <div className="w-[34px] h-[34px] rounded-md bg-primary flex items-center justify-center font-bold text-[13px] text-primary-foreground flex-shrink-0">
             {user?.username?.[0]?.toUpperCase() ?? "U"}
           </div>
           <div className="flex-1 min-w-0">

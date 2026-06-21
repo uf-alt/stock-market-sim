@@ -16,6 +16,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/achievements": "Achievements",
   "/leaderboards": "Leaderboard",
   "/settings": "Settings",
+  "/backtesting": "Backtest",
 };
 
 export default function DashboardLayout({
@@ -24,8 +25,8 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { isAuthenticated, init } = useAuthStore();
-  const { fetchStocks, stocks } = useMarketStore();
-  const { syncPrices } = usePortfolioStore();
+  const { fetchStocks, fetchWatchlist, stocks } = useMarketStore();
+  const { syncPrices, fetchPortfolio } = usePortfolioStore();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -43,10 +44,12 @@ export default function DashboardLayout({
     }
   }, [isAuthenticated, initialized, pathname, router]);
 
-  // Load market data once authenticated
+  // Load all data once authenticated
   useEffect(() => {
     if (!isAuthenticated) return;
     fetchStocks();
+    fetchPortfolio();
+    fetchWatchlist();
   }, [isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Keep portfolio P&L current whenever prices refresh

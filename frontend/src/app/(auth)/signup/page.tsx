@@ -37,20 +37,14 @@ export default function SignupPage() {
   return (
     <div className="w-full max-w-sm">
       <div className="flex items-center gap-2.5 justify-center mb-8">
-        <span
-          className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-white text-[15px]"
-          style={{ background: "linear-gradient(135deg, #a8521a, #e07830)" }}
-        >
+        <span className="w-7 h-7 rounded-md border border-primary/40 flex items-center justify-center font-black text-[13px] text-primary">
           S
         </span>
-        <span className="font-bold text-[17px]">StockSim</span>
+        <span className="font-semibold text-[15px] tracking-tight">StockSim</span>
       </div>
 
-      <div className="bg-card border border-border rounded-2xl p-8">
-        <h2
-          className="text-2xl font-black mb-1"
-          style={{ fontFamily: "var(--font-playfair)" }}
-        >
+      <div className="bg-card border border-border rounded-xl p-8">
+        <h2 className="text-2xl font-bold mb-1">
           Start trading
         </h2>
         <p className="text-[13px] text-muted-foreground mb-6">

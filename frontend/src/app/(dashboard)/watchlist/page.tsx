@@ -17,7 +17,7 @@ export default function WatchlistPage() {
       </div>
 
       {watched.length === 0 ? (
-        <div className="bg-card border border-border rounded-2xl p-12 text-center">
+        <div className="bg-card border border-border rounded-xl p-12 text-center">
           <Star size={32} className="text-muted-foreground/30 mx-auto mb-4" />
           <p className="text-[15px] text-muted-foreground mb-3">Your watchlist is empty.</p>
           <Link href="/markets" className="text-primary font-semibold text-[13px] hover:underline">
@@ -41,7 +41,7 @@ export default function WatchlistPage() {
                 <tr key={s.ticker} className="group hover:bg-primary/5 transition-colors">
                   <td className={`py-4 px-4 ${i > 0 ? "border-t border-border" : ""}`}>
                     <div className="flex items-center gap-3">
-                      <span className="w-9 h-9 rounded-xl bg-card border border-border flex items-center justify-center text-[10px] font-black text-muted-foreground flex-shrink-0">
+                      <span className="w-9 h-9 rounded-md bg-card border border-border flex items-center justify-center text-[10px] font-black text-muted-foreground flex-shrink-0">
                         {s.ticker.slice(0, 2)}
                       </span>
                       <div>
