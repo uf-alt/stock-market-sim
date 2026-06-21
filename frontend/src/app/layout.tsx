@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist_Mono, DM_Sans } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import { Providers } from "@/components/providers/Providers";
 
@@ -28,17 +27,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark h-full" suppressHydrationWarning>
-      <head />
-      <body
-        className={`${dmSans.variable} ${geistMono.variable} h-full antialiased`}
-      >
-        <Script
-          id="theme-init"
-          strategy="beforeInteractive"
+      <head>
+        <script
           dangerouslySetInnerHTML={{
             __html: `(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.classList.toggle('dark',t==='dark');})()`,
           }}
         />
+      </head>
+      <body
+        className={`${dmSans.variable} ${geistMono.variable} h-full antialiased`}
+      >
         <Providers>{children}</Providers>
       </body>
     </html>
